@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import com.avatar.avatar_7dayshorders.Main;
+import com.avatar.avatar_7dayshorders.server.ServerConfig;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -22,17 +23,24 @@ public class MobSpawnHandler {
 
     private static final List<LivingEntity> currentWaveMobs = new ArrayList<>();
 
-    private static final Map<Integer, List<LivingEntity>> currentWaveMobsPerPlayer = new HashMap<>();
+    private static final Map<Integer, List<Integer>> currentWaveMobsPerPlayer = null;
 
-    public static void start(ServerLevel world) {
-        if (currentWaveMobs.isEmpty()) {
-            Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
-            for (ServerPlayer player : players) {
+    public static void start(ServerLevel world, Integer weaverNumber) {
+        Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
+        for (ServerPlayer player : players) {
+            if (currentWaveMobsPerPlayer == null) {
+                currentWaveMobsPerPlayer = ServerConfig.getPlayerMobs(player);
                 player.sendSystemMessage(
                         Component.translatable("The night starts, the mobs are incoming!"));
-                List<LivingEntity> currentWave = new ArrayList<>();
-                currentWave.addAll(MobCreate.spawnMobs(world, player, "minecraft:zombie", 1));
-                currentWaveMobsPerPlayer.put(player.getId(), currentWaveMobs);
+            } else {
+                List<Integer> currentWave = new ArrayList<>();
+                List<MobWeaveDescripton> weaverNumberListMobs = ServerConfig.getListMobs(weaverNumber);
+                for (int i = 0; i < weaverNumberListMobs.size(); i++) {
+                    MobWeaveDescripton mobsInfo = weaverNumberListMobs.get(i);
+                    currentWave
+                            .addAll(MobCreate.spawnMobs(world, player, mobsInfo.getMobName(), mobsInfo.getQuantity()));
+                }
+                currentWaveMobsPerPlayer.put(player.getId(), currentWave);
             }
         }
     }

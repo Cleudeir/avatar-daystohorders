@@ -1,13 +1,10 @@
 package com.avatar.avatar_7dayshorders.server;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.state.BlockState;
+import com.avatar.avatar_7dayshorders.function.MobWeaveDescripton;
+
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -18,40 +15,49 @@ public class ServerConfig {
     public static ForgeConfigSpec CONFIG;
 
     // Define your config values here
-    public static ForgeConfigSpec.ConfigValue<List<String>> BROKEN_BLOCKS;
-    public static ForgeConfigSpec.ConfigValue<List<String>> AROUND_BLOCKS;
-    public static ForgeConfigSpec.ConfigValue<List<String>> PERIMETER_BLOCKS;
-    public static ForgeConfigSpec.ConfigValue<String> MAIN_BLOCK_POS;
+    public static ForgeConfigSpec.ConfigValue<List<String>> LIST_MOBS_PER_WEAVE;
+
     // Initialize config values without static initializer block
     static {
         setupConfig();
     }
 
     private static void setupConfig() {
-        BUILDER.comment("Broken Blocks Data").push("brokenBlocks");
-        BROKEN_BLOCKS = BUILDER
-                .comment("Default broken blocks data")
-                .define("default", new ArrayList<String>());
+        BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");
+        ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
+            {
+                add("[minecraft:zombie,1,0,0]");
+                add("[minecraft:skeleton,2,0,0]");
+                add("[minecraft:creeper,3,0,0]");
+                add("[minecraft:spider,4,0,0]");
+                add("[minecraft:enderman,1,0,0]");
+                add("[minecraft:endermite,1,0,0]");
+                add("[minecraft:cave_spider,1,0,0]");
+                add("[minecraft:witch,1,0,0]");
+                add("[minecraft:blaze,1,0,0]");
+                add("[minecraft:ghast,1,0,0]");
+                add("[minecraft:slime,1,0,0]");
+                add("[minecraft:magma_cube,1,0,0]");
+                add("[minecraft:phantom,1,0,0]");
+                add("[minecraft:vindicator,1,0,0]");
+                add("[minecraft:evoker,1,0,0]");
+                add("[minecraft:ravager,1,0,0]");
+                add("[minecraft:husk,1,0,0]");
+                add("[minecraft:stray,1,0,0]");
+                add("[minecraft:drowned,1,0,0]");
+                add("[minecraft:guardian,1,0,0]");
+                add("[minecraft:elder_guardian,1,0,0]");
+                add("[minecraft:shulker,1,0,0]");
+                add("[minecraft:illusioner,1,0,0]");
+                add("[minecraft:pillager,1,0,0]");
+                add("[minecraft:vex,1,0,0]");
+            }
+        };
+        LIST_MOBS_PER_WEAVE = BUILDER
+                .comment(
+                        "Default mobs per weave table data, example: [minecraft:zombie,1,0,0] = [mobName,quantity,startWeave,endWeave], endWeave if 0 = infinity")
+                .define("default", defaultMobsPerWeave);
         BUILDER.pop();
-
-        BUILDER.comment("Around Blocks MainBlock Data").push("aroundBlocksMainBlock");
-        AROUND_BLOCKS = BUILDER
-                .comment("Default around blocks table data")
-                .define("default", new ArrayList<String>());
-        BUILDER.pop();
-
-        BUILDER.comment("Perimeter Blocks MainBlock Data").push("perimeterBlocksMainBlock");
-        PERIMETER_BLOCKS = BUILDER
-                .comment("Default perimeter blocks table data")
-                .define("default", new ArrayList<String>());
-        BUILDER.pop();
-
-        BUILDER.comment("Main Block Position").push("mainBlockPos");
-        MAIN_BLOCK_POS = BUILDER
-                .comment("Default main block position")
-                .define("default", "0,0,0");
-        BUILDER.pop();
-
         CONFIG = BUILDER.build();
     }
 
@@ -59,98 +65,50 @@ public class ServerConfig {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CONFIG);
     }
 
-    public static List<String> serializeBlockPosMap(Map<BlockPos, BlockState> list) {
-        List<String> ListBlockPos = new ArrayList<>();
-        for (Map.Entry<BlockPos, BlockState> entry : list.entrySet()) {
-            BlockPos blockPos = entry.getKey();
-            String stringBlockPos = blockPos.getX() + "," + blockPos.getY() + "," + blockPos.getZ();
-            ListBlockPos.add(stringBlockPos);
+    public static List<String> serializeMobsList(List<MobWeaveDescripton> list) {
+        List<String> ListSerialized = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            MobWeaveDescripton mobsInfo = list.get(i);
+            String serialized = "[" + mobsInfo.getMobName() + "," + mobsInfo.getQuantity() + ","
+                    + mobsInfo.getStartWeave()
+                    + "," + mobsInfo.getEndWeave() + "]";
+            ListSerialized.add(serialized);
         }
-        return ListBlockPos;
+        return ListSerialized;
     }
 
-    private static Map<BlockPos, BlockState> deserializeBlockPosMap(List<String> MapBlockPos, ServerLevel world) {
-        Map<BlockPos, BlockState> map = new HashMap<>();
-        for (String entry : MapBlockPos) {
-            String[] split = entry.split(",");
-            int x = Integer.parseInt(split[0]);
-            int y = Integer.parseInt(split[1]);
-            int z = Integer.parseInt(split[2]);
-            BlockPos blockPos = new BlockPos(x, y, z);
-            BlockState blockState = world.getBlockState(blockPos);
-            map.put(blockPos, blockState);
+    public static List<MobWeaveDescripton> deserializeMobsList(List<String> ListSerialized) {
+        List<MobWeaveDescripton> list = new ArrayList<>();
+        for (String entry : ListSerialized) {
+            String[] split = entry.replace("[", "").replace("]", "").split(",");
+            String mobName = split[0];
+            int quantity = Integer.parseInt(split[1]);
+            int startWeave = Integer.parseInt(split[2]);
+            int endWeave = Integer.parseInt(split[3]);
+            MobWeaveDescripton mobsInfo = new MobWeaveDescripton(mobName, quantity, startWeave, endWeave);
+            list.add(mobsInfo);
         }
-        return map;
-    }
-
-    private static BlockPos deserializeBlockPos(String BlockPos) {
-        String[] split = BlockPos.split(",");
-        int x = Integer.parseInt(split[0]);
-        int y = Integer.parseInt(split[1]);
-        int z = Integer.parseInt(split[2]);
-        BlockPos blockPos = new BlockPos(x, y, z);
-        return blockPos;
+        return list;
     }
 
     // Method to save data
-    public static void save(Map<BlockPos, BlockState> brokenBlocks,
-            Map<BlockPos, BlockState> aroundBlocksMainBlock,
-            Map<BlockPos, BlockState> perimeterBlocksMainBlock,
-            BlockPos mainBlockPos) {
-        List<String> brokenBlocksString = serializeBlockPosMap(brokenBlocks);
-        List<String> aroundBlocksMainBlockString = serializeBlockPosMap(aroundBlocksMainBlock);
-        List<String> perimeterBlocksMainBlockString = serializeBlockPosMap(perimeterBlocksMainBlock);
-        String mainBlockPosString = mainBlockPos.getX() + "," + mainBlockPos.getY() + "," + mainBlockPos.getZ();
-        BROKEN_BLOCKS.set(brokenBlocksString);
-        AROUND_BLOCKS.set(aroundBlocksMainBlockString);
-        PERIMETER_BLOCKS.set(perimeterBlocksMainBlockString);
-        MAIN_BLOCK_POS.set(mainBlockPosString);
+    public static void save(List<MobWeaveDescripton> listWeaveMobs) {
+        LIST_MOBS_PER_WEAVE.set(serializeMobsList(listWeaveMobs));
         CONFIG.save();
     }
 
     // Method to load data
-    public static Map<BlockPos, BlockState> loadBrokenBlocks(ServerLevel world) {
-        // Load the config if not already loaded
-        Map<BlockPos, BlockState> brokenBlocksGet = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    public static List<MobWeaveDescripton> getListMobs(Integer weaveNumber) {
+        List<MobWeaveDescripton> data = new ArrayList<>();
         if (CONFIG.isLoaded()) {
-            // Retrieve data from config
-            brokenBlocksGet = deserializeBlockPosMap(BROKEN_BLOCKS.get(), world);
+            data = deserializeMobsList(LIST_MOBS_PER_WEAVE.get());
+            data = (List<MobWeaveDescripton>) data.stream()
+                    .filter(x -> x.getStartWeave() <= weaveNumber
+                            && (x.getEndWeave() >= weaveNumber || x.getEndWeave() == 0))
+                    .collect(Collectors.toList());
             System.out.println("Data loaded from config");
         }
-        return brokenBlocksGet;
+        return data;
     }
-
-    public static Map<BlockPos, BlockState> loadAroundMainBlock(ServerLevel world) {
-        // Load the config if not already loaded
-        Map<BlockPos, BlockState> aroundBlocksMainBlockGet = new HashMap<>();
-        if (CONFIG.isLoaded()) {
-            // Retrieve data from config
-            aroundBlocksMainBlockGet = deserializeBlockPosMap(AROUND_BLOCKS.get(), world);
-            System.out.println("Data loaded from config");
-        }
-        return aroundBlocksMainBlockGet;
-    }
-
-    public static Map<BlockPos, BlockState> loadPerimeterMainBlock(ServerLevel world) {
-        // Load the config if not already loaded
-        Map<BlockPos, BlockState> perimeterBlocks = new HashMap<>();
-        if (CONFIG.isLoaded()) {
-            // Retrieve data from config
-            perimeterBlocks = deserializeBlockPosMap(PERIMETER_BLOCKS.get(), world);
-            System.out.println("Data loaded from config");
-        }
-        return perimeterBlocks;
-    }
-
-    public static BlockPos loadMainBlockPos(ServerLevel world) {
-        // Load the config if not already loaded
-        BlockPos mainBlock = new BlockPos(0, 0, 0);
-        if (CONFIG.isLoaded()) {
-            // Retrieve data from config
-            mainBlock = deserializeBlockPos(MAIN_BLOCK_POS.get());
-            System.out.println("Data loaded from config");
-        }
-        return mainBlock;
-    }
-
 }

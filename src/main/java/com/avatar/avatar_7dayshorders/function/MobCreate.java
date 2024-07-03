@@ -57,8 +57,8 @@ public class MobCreate {
                 }
             });
 
-    public static List<LivingEntity> spawnMobs(ServerLevel world, Player player, String mobName, int quantity) {
-        List<LivingEntity> currentWave = new ArrayList<>();
+    public static List<Integer> spawnMobs(ServerLevel world, Player player, String mobName, int quantity) {
+        List<Integer> currentWave = new ArrayList<>();
         @Nullable
         EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(mobName));
         if (entityType != null) {
@@ -67,7 +67,7 @@ public class MobCreate {
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
                     spawnAndTrack(world, mob, player);
-                    currentWave.add(mob);
+                    currentWave.add(mob.getId());
                 }
             }
         }
