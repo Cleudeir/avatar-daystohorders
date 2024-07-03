@@ -51,8 +51,10 @@ public class Events {
                 boolean isNight = timeDay >= 13000 && timeDay <= 23000;
                 currentTime = time;
                 int day = (int) (time / 24000);
+                int weaveNumber = periodWeave == 0 ? 0 : (int) day / periodWeave;
                 if (checkPeriod(10) && day % periodWeave == 0 && isNight) {
-                    MobSpawnHandler.start(world);
+                    System.out.println("Start wave " + weaveNumber);
+                    MobSpawnHandler.start(world, weaveNumber);
                 }
             }
 
@@ -67,6 +69,7 @@ public class Events {
 
     @SubscribeEvent
     public static void onServerShutdown(ServerStoppingEvent event) {
+        MobSpawnHandler.save();
         System.out.println("Server is shutting down!");
     }
 
