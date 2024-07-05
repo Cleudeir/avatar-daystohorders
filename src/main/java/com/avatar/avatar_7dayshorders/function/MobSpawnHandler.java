@@ -43,11 +43,11 @@ public class MobSpawnHandler {
                                 mobsInfo.getQuantity());
                         currentWave.addAll(create);
                     }
+                    currentWaveMobsPerPlayer.put(playerName, currentWave);
                 }else{
                     player.sendSystemMessage(
                         Component.translatable("Weave number mobs " + currentWave.size() ));
                 }
-                currentWaveMobsPerPlayer.put(playerName, currentWave);
             }
         }
     }
