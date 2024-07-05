@@ -32,6 +32,9 @@ public class MobSpawnHandler {
             } else {
                 List<MobWeaveDescripton> weaverNumberListMobs = ServerConfig.getListMobs(weaverNumber);
                 List<Integer> currentWave = currentWaveMobsPerPlayer.get(playerId);
+                if (currentWave == null) {
+                    currentWave = new ArrayList<>();
+                }
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
                     List<Integer> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
                             mobsInfo.getQuantity());
@@ -49,6 +52,6 @@ public class MobSpawnHandler {
 
     public static void save() {
         ServerConfig.save(currentWaveMobsPerPlayer);
-        System.out.println("Data saved" + currentWaveMobsPerPlayer);
+        System.out.println(" Data saved " + currentWaveMobsPerPlayer);
     }
 }

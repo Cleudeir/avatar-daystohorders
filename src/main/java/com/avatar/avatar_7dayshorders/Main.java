@@ -19,8 +19,8 @@ public class Main {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new Events());
         System.out.println("Mod constructor called");
-        ServerConfig.init();
         GlobalConfig.init();
+        ServerConfig.init();
     }
 
     private void setup(final FMLCommonSetupEvent event) {

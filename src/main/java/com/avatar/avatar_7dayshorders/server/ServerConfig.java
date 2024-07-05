@@ -18,56 +18,25 @@ public class ServerConfig {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static ForgeConfigSpec CONFIG;
 
-    // Define your config values here
     public static ForgeConfigSpec.ConfigValue<List<String>> LIST_MOBS_PER_WEAVE;
     public static ForgeConfigSpec.ConfigValue<List<String>> CURRENT_WAVE_MOBS_PER_PLAYER;
 
-    // Initialize config values without static initializer block
     static {
         setupConfig();
     }
 
     private static void setupConfig() {
         BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");
-        ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
-            {
-                add("[minecraft:zombie,1,0,0]");
-                add("[minecraft:skeleton,2,0,0]");
-                add("[minecraft:creeper,3,0,0]");
-                add("[minecraft:spider,4,0,0]");
-                add("[minecraft:enderman,1,0,0]");
-                add("[minecraft:endermite,1,0,0]");
-                add("[minecraft:cave_spider,1,0,0]");
-                add("[minecraft:witch,1,0,0]");
-                add("[minecraft:blaze,1,0,0]");
-                add("[minecraft:ghast,1,0,0]");
-                add("[minecraft:slime,1,0,0]");
-                add("[minecraft:magma_cube,1,0,0]");
-                add("[minecraft:phantom,1,0,0]");
-                add("[minecraft:vindicator,1,0,0]");
-                add("[minecraft:evoker,1,0,0]");
-                add("[minecraft:ravager,1,0,0]");
-                add("[minecraft:husk,1,0,0]");
-                add("[minecraft:stray,1,0,0]");
-                add("[minecraft:drowned,1,0,0]");
-                add("[minecraft:guardian,1,0,0]");
-                add("[minecraft:elder_guardian,1,0,0]");
-                add("[minecraft:shulker,1,0,0]");
-                add("[minecraft:illusioner,1,0,0]");
-                add("[minecraft:pillager,1,0,0]");
-                add("[minecraft:vex,1,0,0]");
-            }
-        };
         LIST_MOBS_PER_WEAVE = BUILDER.comment(
-                "Default mobs per weave table data, example: [minecraft:zombie,1,0,0] = [mobName,quantity,startWeave,endWeave], endWeave if 0 = infinity")
-                .define("mobsPerWeave", defaultMobsPerWeave);
+                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,quantity,startWeave,endWeave, endWeave\" if 0 = infinity")
+                .define("default", new ArrayList<String>());
 
         BUILDER.pop();
 
         BUILDER.comment("Current wave mobs per player").push("currentWaveMobsPerPlayer");
         CURRENT_WAVE_MOBS_PER_PLAYER = BUILDER
                 .comment("Current wave mobs per player")
-                .define("currentWaveMobsPerPlayer", new ArrayList<String>());
+                .define("default", new ArrayList<String>());
         BUILDER.pop();
 
         CONFIG = BUILDER.build();
@@ -81,9 +50,9 @@ public class ServerConfig {
         List<String> ListSerialized = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             MobWeaveDescripton mobsInfo = list.get(i);
-            String serialized = "[" + mobsInfo.getMobName() + "," + mobsInfo.getQuantity() + ","
+            String serialized = mobsInfo.getMobName() + "," + mobsInfo.getQuantity() + ","
                     + mobsInfo.getStartWeave()
-                    + "," + mobsInfo.getEndWeave() + "]";
+                    + "," + mobsInfo.getEndWeave();
             ListSerialized.add(serialized);
         }
         return ListSerialized;
@@ -92,7 +61,7 @@ public class ServerConfig {
     public static List<MobWeaveDescripton> deserializeMobsList(List<String> ListSerialized) {
         List<MobWeaveDescripton> list = new ArrayList<>();
         for (String entry : ListSerialized) {
-            String[] split = entry.replace("[", "").replace("]", "").split(",");
+            String[] split = entry.split(",");
             String mobName = split[0];
             int quantity = Integer.parseInt(split[1]);
             int startWeave = Integer.parseInt(split[2]);
@@ -110,7 +79,7 @@ public class ServerConfig {
             List<Integer> value = entry.getValue();
             String numberString = value.stream().map(String::valueOf)
                     .collect(Collectors.joining(","));
-            String serialized = key + ":[" + numberString + "]";
+            String serialized = key + ":" + numberString;
             ListSerialized.add(serialized);
         }
         return ListSerialized;
@@ -120,16 +89,16 @@ public class ServerConfig {
         Map<Integer, List<Integer>> currentWaveMobsPerPlayer = new HashMap<>();
         for (String entry : ListSerialized) {
             if (entry.isEmpty()) {
-                continue; // Skip empty entries
+                continue;
             }
             String[] split = entry.split(":");
             if (split.length < 2) {
-                continue; // Skip invalid entries
+                continue;
             }
             int key = Integer.parseInt(split[0]);
-            String[] array = split[1].replace("[", "").replace("]", "").split(",");
+            String[] array = split[1].split(",");
             List<Integer> value = Arrays.stream(array)
-                    .filter(x -> !x.isEmpty()) // Filter out empty strings
+                    .filter(x -> !x.isEmpty())
                     .map(Integer::parseInt)
                     .collect(Collectors.toList());
             currentWaveMobsPerPlayer.put(key, value);
@@ -137,9 +106,10 @@ public class ServerConfig {
         return currentWaveMobsPerPlayer;
     }
 
-    // Method to save data
-    public static void save(
-            Map<Integer, List<Integer>> currentWaveMobsPerPlayer) {
+    public static void save(Map<Integer, List<Integer>> currentWaveMobsPerPlayer) {
+        if (!CONFIG.isLoaded()) {
+            return;
+        }
         CURRENT_WAVE_MOBS_PER_PLAYER.set(serializeCurrentWaveMobsPerPlayer(currentWaveMobsPerPlayer));
         CONFIG.save();
     }
@@ -160,6 +130,40 @@ public class ServerConfig {
         List<MobWeaveDescripton> data = new ArrayList<>();
         if (CONFIG.isLoaded()) {
             data = deserializeMobsList(LIST_MOBS_PER_WEAVE.get());
+            if (data.isEmpty()) {
+                ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
+                    {
+                        add("minecraft:zombie,1,0,0");
+                        add("minecraft:skeleton,2,0,0");
+                        add("minecraft:creeper,3,0,0");
+                        add("minecraft:spider,4,0,0");
+                        add("minecraft:enderman,1,0,0");
+                        add("minecraft:endermite,1,0,0");
+                        add("minecraft:cave_spider,1,0,0");
+                        add("minecraft:witch,1,0,0");
+                        add("minecraft:blaze,1,0,0");
+                        add("minecraft:ghast,1,0,0");
+                        add("minecraft:slime,1,0,0");
+                        add("minecraft:magma_cube,1,0,0");
+                        add("minecraft:phantom,1,0,0");
+                        add("minecraft:vindicator,1,0,0");
+                        add("minecraft:evoker,1,0,0");
+                        add("minecraft:ravager,1,0,0");
+                        add("minecraft:husk,1,0,0");
+                        add("minecraft:stray,1,0,0");
+                        add("minecraft:drowned,1,0,0");
+                        add("minecraft:guardian,1,0,0");
+                        add("minecraft:elder_guardian,1,0,0");
+                        add("minecraft:shulker,1,0,0");
+                        add("minecraft:illusioner,1,0,0");
+                        add("minecraft:pillager,1,0,0");
+                        add("minecraft:vex,1,0,0");
+                    };
+                };
+                LIST_MOBS_PER_WEAVE.set(defaultMobsPerWeave);
+                CONFIG.save();
+            }
+
             data = data.stream()
                     .filter(x -> x.getStartWeave() <= weaveNumber
                             && (x.getEndWeave() >= weaveNumber || x.getEndWeave() == 0))

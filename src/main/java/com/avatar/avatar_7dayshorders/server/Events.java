@@ -43,6 +43,7 @@ public class Events {
             ServerLevel world = event.getServer().getLevel(Level.OVERWORLD);
             if (currentWorld == null) {
                 periodWeave = GlobalConfig.loadPeriodWeave();
+                ServerConfig.getListMobs(1);
             }
             if (world != null) {
                 currentWorld = world;
