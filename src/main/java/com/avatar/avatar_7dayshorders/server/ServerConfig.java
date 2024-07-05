@@ -72,10 +72,10 @@ public class ServerConfig {
         return list;
     }
 
-    public static List<String> serializeCurrentWaveMobsPerPlayer(Map<Integer, List<Integer>> currentWaveMobsPerPlayer) {
+    public static List<String> serializeCurrentWaveMobsPerPlayer(Map<String, List<Integer>> currentWaveMobsPerPlayer) {
         List<String> ListSerialized = new ArrayList<>();
-        for (Map.Entry<Integer, List<Integer>> entry : currentWaveMobsPerPlayer.entrySet()) {
-            Integer key = entry.getKey();
+        for (Map.Entry<String, List<Integer>> entry : currentWaveMobsPerPlayer.entrySet()) {
+            String key = entry.getKey();
             List<Integer> value = entry.getValue();
             String numberString = value.stream().map(String::valueOf)
                     .collect(Collectors.joining(","));
@@ -85,8 +85,8 @@ public class ServerConfig {
         return ListSerialized;
     }
 
-    public static Map<Integer, List<Integer>> deserializeCurrentWaveMobsPerPlayer(List<String> ListSerialized) {
-        Map<Integer, List<Integer>> currentWaveMobsPerPlayer = new HashMap<>();
+    public static Map<String, List<Integer>> deserializeCurrentWaveMobsPerPlayer(List<String> ListSerialized) {
+        Map<String, List<Integer>> currentWaveMobsPerPlayer = new HashMap<>();
         for (String entry : ListSerialized) {
             if (entry.isEmpty()) {
                 continue;
@@ -95,7 +95,7 @@ public class ServerConfig {
             if (split.length < 2) {
                 continue;
             }
-            int key = Integer.parseInt(split[0]);
+            String key = split[0];
             String[] array = split[1].split(",");
             List<Integer> value = Arrays.stream(array)
                     .filter(x -> !x.isEmpty())
@@ -106,7 +106,7 @@ public class ServerConfig {
         return currentWaveMobsPerPlayer;
     }
 
-    public static void save(Map<Integer, List<Integer>> currentWaveMobsPerPlayer) {
+    public static void save(Map<String, List<Integer>> currentWaveMobsPerPlayer) {
         if (!CONFIG.isLoaded()) {
             return;
         }
@@ -114,8 +114,8 @@ public class ServerConfig {
         CONFIG.save();
     }
 
-    public static List<Integer> getPlayerMobs(int playerId) {
-        Map<Integer, List<Integer>> data = new HashMap<>();
+    public static List<Integer> getPlayerMobs(String playerId) {
+        Map<String, List<Integer>> data = new HashMap<>();
         if (CONFIG.isLoaded()) {
             data = deserializeCurrentWaveMobsPerPlayer(CURRENT_WAVE_MOBS_PER_PLAYER.get());
             System.out.println("Data loaded from config");

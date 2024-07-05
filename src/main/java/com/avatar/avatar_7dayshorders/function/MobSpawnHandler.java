@@ -18,29 +18,36 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = Main.MODID)
 public class MobSpawnHandler {
 
-    private static final Map<Integer, List<Integer>> currentWaveMobsPerPlayer = new HashMap<>();
+    private static final Map<String, List<Integer>> currentWaveMobsPerPlayer = new HashMap<>();
 
     public static void start(ServerLevel world, Integer weaverNumber) {
         Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
         for (ServerPlayer player : players) {
-            int playerId = player.getId();
+            String playerName = player.getName().getString();
             if (currentWaveMobsPerPlayer.isEmpty()) {
-                List<Integer> currentWaveMobs = ServerConfig.getPlayerMobs(playerId);
-                currentWaveMobsPerPlayer.put(playerId, currentWaveMobs);
+                List<Integer> currentWaveMobs = ServerConfig.getPlayerMobs(playerName);
+                currentWaveMobsPerPlayer.put(playerName, currentWaveMobs);
                 player.sendSystemMessage(
                         Component.translatable("The night starts, the mobs are incoming!"));
             } else {
                 List<MobWeaveDescripton> weaverNumberListMobs = ServerConfig.getListMobs(weaverNumber);
-                List<Integer> currentWave = currentWaveMobsPerPlayer.get(playerId);
+                List<Integer> currentWave = currentWaveMobsPerPlayer.get(playerName);
                 if (currentWave == null) {
                     currentWave = new ArrayList<>();
                 }
-                for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
-                    List<Integer> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
-                            mobsInfo.getQuantity());
-                    currentWave.addAll(create);
+                if(currentWave.isEmpty()){
+                    for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
+                        player.sendSystemMessage(
+                            Component.translatable("Weave started"));
+                        List<Integer> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
+                                mobsInfo.getQuantity());
+                        currentWave.addAll(create);
+                    }
+                }else{
+                    player.sendSystemMessage(
+                        Component.translatable("Weave number mobs " + currentWave.size() ));
                 }
-                currentWaveMobsPerPlayer.put(playerId, currentWave);
+                currentWaveMobsPerPlayer.put(playerName, currentWave);
             }
         }
     }
