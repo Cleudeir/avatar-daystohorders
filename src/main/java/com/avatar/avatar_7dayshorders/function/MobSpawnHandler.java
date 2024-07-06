@@ -26,6 +26,7 @@ public class MobSpawnHandler {
             String playerName = player.getName().getString();
             if (currentWaveMobsPerPlayer.isEmpty()) {
                 List<Integer> currentWaveMobs = ServerConfig.getPlayerMobs(playerName);
+                System.out.println("currentWaveMobs "+ currentWaveMobs);
                 currentWaveMobsPerPlayer.put(playerName, currentWaveMobs);
                 player.sendSystemMessage(
                         Component.translatable("The night starts, the mobs are incoming!"));
@@ -36,9 +37,9 @@ public class MobSpawnHandler {
                     currentWave = new ArrayList<>();
                 }
                 if(currentWave.isEmpty()){
-                    for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
-                        player.sendSystemMessage(
-                            Component.translatable("Weave started"));
+                    player.sendSystemMessage(
+                        Component.translatable("Start new Weave!"));  
+                    for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {                                            
                         List<Integer> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
                                 mobsInfo.getQuantity());
                         currentWave.addAll(create);

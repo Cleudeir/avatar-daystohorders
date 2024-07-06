@@ -38,7 +38,7 @@ public class MobCreate {
         return currentWave;
     }
     public static void spawnAndTrack(ServerLevel world, Mob entity, Player player) {
-        int distante = 40;
+        int distante = 30;
         double x = player.getX() + world.random.nextInt(30) - distante;
         double z = player.getZ() + world.random.nextInt(30) - distante;
         double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
