@@ -45,6 +45,7 @@ public class GlobalConfig {
     public static void init() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG);
     }
+
     // Method to save data
     public static void savePeriodWeave(int periodWeave) {
         String periodWeaveString = String.valueOf(periodWeave);
@@ -91,15 +92,15 @@ public class GlobalConfig {
         return list;
     }
 
-     public static List<MobWeaveDescripton> getListMobs(Integer weaveNumber) {
+    public static List<MobWeaveDescripton> getListMobs(Integer weaveNumber) {
         List<MobWeaveDescripton> data = new ArrayList<>();
         if (CONFIG.isLoaded()) {
             data = deserializeMobsList(LIST_MOBS_PER_WEAVE.get());
             if (data.isEmpty()) {
                 ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
                     {
-                        add("minecraft:zombie,5,0,0");
-                        add("minecraft:skeleton,1,1,0");
+                        add("minecraft:zombie,1,2,0");
+                        add("minecraft:skeleton,1,2,0");
                         add("minecraft:creeper,1,2,0");
                         add("minecraft:spider,1,3,0");
                         add("minecraft:enderman,1,4,0");
@@ -112,11 +113,11 @@ public class GlobalConfig {
                         add("minecraft:magma_cube,1,11,0");
                         add("minecraft:phantom,1,12,0");
                         add("minecraft:vindicator,1,13,0");
-                        add("minecraft:evoker,1,14,0");
+                        add("minecraft:evoker,1,1,0");
                         add("minecraft:ravager,1,15,0");
                         add("minecraft:husk,1,16,0");
                         add("minecraft:stray,1,17,0");
-                        add("minecraft:drowned,18,0,0");
+                        add("minecraft:drowned,18,2,0");
                         add("minecraft:guardian,1,19,0");
                         add("minecraft:elder_guardian,1,20,0");
                         add("minecraft:shulker,1,21,0");

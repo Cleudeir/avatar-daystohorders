@@ -14,6 +14,10 @@ import com.avatar.avatar_7dayshorders.server.ServerConfig;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -29,21 +33,26 @@ public class MobSpawnHandler {
         List<MobWeaveDescripton> weaverNumberListMobs = GlobalConfig.getListMobs(weaverNumber);
         for (ServerPlayer player : players) {
             String playerName = player.getName().getString();
-            System.out.println("currentWaveMobsPerPlayer " + currentWaveMobsPerPlayer);
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
             System.out.println("currentWave " + currentWave);
             if (currentWave == null) {
-                List<UUID> currentWaveMobs = ServerConfig.loadPlayerMobs(playerName);
-                currentWaveMobsPerPlayer.put(playerName, currentWaveMobs);
-                System.out.println("currentWaveMobsPerPlayer " + currentWaveMobsPerPlayer);
+                currentWave = ServerConfig.loadPlayerMobs(playerName);
+                currentWaveMobsPerPlayer.put(playerName, currentWave);
                 player.sendSystemMessage(
                         Component.translatable("The night starts, the mobs are incoming!"));
+                // ative effect sound
+                world.playSound(null, player.blockPosition(), SoundEvents.BELL_RESONATE,
+                        SoundSource.HOSTILE, 1.0F, 1.0F);
             } else if (currentWave.isEmpty()) {
                 player.sendSystemMessage(
                         Component.translatable("Start new Weave!"));
+
+                System.out.println("mobsInfo >>>>>>> " + weaverNumberListMobs);
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
+                    System.out.println("mobsInfo >>>>>>> " + mobsInfo.getMobName() + " " + mobsInfo.getQuantity());
                     List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
                             mobsInfo.getQuantity());
+
                     currentWave.addAll(create);
                 }
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
@@ -58,13 +67,13 @@ public class MobSpawnHandler {
     public void end() {
         currentWaveMobsPerPlayer.clear();
     }
-    private static void mobCheck(Player player, ServerLevel world,  List<UUID> currentWave) {
+
+    private static void mobCheck(Player player, ServerLevel world, List<UUID> currentWave) {
         String playerName = player.getName().getString();
-        if ( currentWave.size() > 0 && world != null) {
+        if (currentWave.size() > 0 && world != null) {
             for (int i = 0; i < currentWave.size(); i++) {
                 UUID mobId = currentWave.get(i);
                 Mob mob = (Mob) world.getEntity(mobId);
-                System.out.println(mob);
                 if (mob != null) {
                     System.out.println("mob " + mob.getName().getString());
                     Boolean mobIsAlive = mob.isAlive();
@@ -74,11 +83,9 @@ public class MobSpawnHandler {
                     }
                     if (mobIsAlive && mob.getTarget() == null) {
                         mob.setTarget(player);
-                    }                    
+                        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
+                    }
                     mobTeleport(mob, world, player);
-                } else {
-                    currentWave.remove(i);
-                    currentWaveMobsPerPlayer.put(playerName, currentWave);
                 }
             }
         }
@@ -92,8 +99,8 @@ public class MobSpawnHandler {
         double firstMobPosY = mob.getY();
         double distance = Math
                 .sqrt(Math.pow(playerPosX - firstMobPosX, 2) + Math.pow(playerPosY - firstMobPosY, 2));
-        System.out.println("Distance: " + distance + ' ' + mob.getName().getString());
         if (distance > 40) {
+            System.out.println("Distance: " + distance + ' ' + mob.getName().getString());
             double x = playerPosX + world.random.nextInt(20) - distante;
             double z = playerPosY + world.random.nextInt(20) - distante;
             double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
