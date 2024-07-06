@@ -28,7 +28,7 @@ public class ServerConfig {
     private static void setupConfig() {
         BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");
         LIST_MOBS_PER_WEAVE = BUILDER.comment(
-                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,quantity,startWeave,endWeave, endWeave\" if 0 = infinity")
+                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,quantity,startWeave,endWeave,endWeave\" if 0 = infinity")
                 .define("default", new ArrayList<String>());
 
         BUILDER.pop();
@@ -114,16 +114,16 @@ public class ServerConfig {
         CONFIG.save();
     }
 
-    public static List<Integer> getPlayerMobs(String playerId) {
+    public static List<Integer> getPlayerMobs(String PlayerName) {
         Map<String, List<Integer>> data = new HashMap<>();
         if (CONFIG.isLoaded()) {
             data = deserializeCurrentWaveMobsPerPlayer(CURRENT_WAVE_MOBS_PER_PLAYER.get());
             System.out.println("Data loaded from config");
         }
-        if (!data.containsKey(playerId)) {
+        if (!data.containsKey(PlayerName)) {
             return new ArrayList<>();
         }
-        return data.get(playerId);
+        return data.get(PlayerName);
     }
 
     public static List<MobWeaveDescripton> getListMobs(Integer weaveNumber) {

@@ -3,7 +3,6 @@ package com.avatar.avatar_7dayshorders.function;
 import java.util.Collection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import com.avatar.avatar_7dayshorders.Main;
