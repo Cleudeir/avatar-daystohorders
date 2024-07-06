@@ -2,6 +2,7 @@ package com.avatar.avatar_7dayshorders.function;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -21,24 +22,24 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class MobCreate { 
-    public static List<Integer> spawnMobs(ServerLevel world, Player player, String mobName, int quantity) {
-        List<Integer> currentWave = new ArrayList<>();
+    public static List<UUID> spawnMobs(ServerLevel world, Player player, String mobName, int quantity) {
+        List<UUID> currentWave = new ArrayList<>();
         @Nullable
         EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(mobName));
         if (entityType != null) {
             for (int i = 0; i < quantity; i++) {
                 Entity entity = entityType.create(world);
                 if (entity instanceof Mob) {
-                    Mob mob = (Mob) entity;
+                    Mob mob = (Mob) entity;                   
                     spawnAndTrack(world, mob, player);
-                    currentWave.add(mob.getId());
+                    currentWave.add(mob.getUUID());
                 }
             }
         }
         return currentWave;
     }
     public static void spawnAndTrack(ServerLevel world, Mob entity, Player player) {
-        int distante = 30;
+        int distante = 20;
         double x = player.getX() + world.random.nextInt(20) - distante;
         double z = player.getZ() + world.random.nextInt(20) - distante;
         double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);

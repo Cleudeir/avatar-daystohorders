@@ -4,8 +4,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 
+import com.avatar.avatar_7dayshorders.GlobalConfig;
 import com.avatar.avatar_7dayshorders.Main;
 import com.avatar.avatar_7dayshorders.server.ServerConfig;
 
@@ -20,18 +22,18 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = Main.MODID)
 public class MobSpawnHandler {
 
-    private static final Map<String, List<Integer>> currentWaveMobsPerPlayer = new HashMap<>();
+    private static final Map<String, List<UUID>> currentWaveMobsPerPlayer = new HashMap<>();
 
     public void start(ServerLevel world, Integer weaverNumber) {
         Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
-        List<MobWeaveDescripton> weaverNumberListMobs = ServerConfig.getListMobs(weaverNumber);
+        List<MobWeaveDescripton> weaverNumberListMobs = GlobalConfig.getListMobs(weaverNumber);
         for (ServerPlayer player : players) {
             String playerName = player.getName().getString();
             System.out.println("currentWaveMobsPerPlayer " + currentWaveMobsPerPlayer);
-            List<Integer> currentWave = currentWaveMobsPerPlayer.get(playerName);
+            List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
             System.out.println("currentWave " + currentWave);
             if (currentWave == null) {
-                List<Integer> currentWaveMobs = ServerConfig.getPlayerMobs(playerName);
+                List<UUID> currentWaveMobs = ServerConfig.loadPlayerMobs(playerName);
                 currentWaveMobsPerPlayer.put(playerName, currentWaveMobs);
                 System.out.println("currentWaveMobsPerPlayer " + currentWaveMobsPerPlayer);
                 player.sendSystemMessage(
@@ -40,7 +42,7 @@ public class MobSpawnHandler {
                 player.sendSystemMessage(
                         Component.translatable("Start new Weave!"));
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
-                    List<Integer> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
+                    List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
                             mobsInfo.getQuantity());
                     currentWave.addAll(create);
                 }
@@ -56,11 +58,11 @@ public class MobSpawnHandler {
     public void end() {
         currentWaveMobsPerPlayer.clear();
     }
-    private static void mobCheck(Player player, ServerLevel world,  List<Integer> currentWave) {
+    private static void mobCheck(Player player, ServerLevel world,  List<UUID> currentWave) {
         String playerName = player.getName().getString();
         if ( currentWave.size() > 0 && world != null) {
             for (int i = 0; i < currentWave.size(); i++) {
-                int mobId = currentWave.get(i);
+                UUID mobId = currentWave.get(i);
                 Mob mob = (Mob) world.getEntity(mobId);
                 System.out.println(mob);
                 if (mob != null) {
@@ -74,13 +76,16 @@ public class MobSpawnHandler {
                         mob.setTarget(player);
                     }                    
                     mobTeleport(mob, world, player);
+                } else {
+                    currentWave.remove(i);
+                    currentWaveMobsPerPlayer.put(playerName, currentWave);
                 }
             }
         }
     }
 
     public static void mobTeleport(Mob mob, ServerLevel world, Player player) {
-        int distante = 30;
+        int distante = 20;
         double playerPosX = player.getX();
         double playerPosY = player.getY();
         double firstMobPosX = mob.getX();
@@ -88,7 +93,7 @@ public class MobSpawnHandler {
         double distance = Math
                 .sqrt(Math.pow(playerPosX - firstMobPosX, 2) + Math.pow(playerPosY - firstMobPosY, 2));
         System.out.println("Distance: " + distance + ' ' + mob.getName().getString());
-        if (distance > 5) {
+        if (distance > 40) {
             double x = playerPosX + world.random.nextInt(20) - distante;
             double z = playerPosY + world.random.nextInt(20) - distante;
             double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);

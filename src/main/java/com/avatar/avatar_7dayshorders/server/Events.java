@@ -36,7 +36,7 @@ public class Events {
             ServerLevel world = event.getServer().getLevel(Level.OVERWORLD);
             if (currentWorld == null) {
                 periodWeave = GlobalConfig.loadPeriodWeave();
-                ServerConfig.getListMobs(1);
+                GlobalConfig.getListMobs(1);
             }
             if (world != null) {
                 currentWorld = world;
@@ -46,7 +46,7 @@ public class Events {
                 currentTime = time;
                 int day = (int) (time / 24000);
                 int weaveNumber = periodWeave == 0 ? 0 : (int) day / periodWeave;
-                if (checkPeriod(10) && day % periodWeave == 0 && isNight) {
+                if (checkPeriod(30) && day % periodWeave == 0 && isNight) {
                     mobSpawnHandler.start(world, weaveNumber);
                 } else if (!isNight && checkPeriod(60)) {
                     mobSpawnHandler.end();
