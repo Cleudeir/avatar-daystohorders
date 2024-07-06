@@ -24,9 +24,9 @@ public class MobSpawnHandler {
 
     public void start(ServerLevel world, Integer weaverNumber) {
         Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
+        List<MobWeaveDescripton> weaverNumberListMobs = ServerConfig.getListMobs(weaverNumber);
         for (ServerPlayer player : players) {
             String playerName = player.getName().getString();
-            List<MobWeaveDescripton> weaverNumberListMobs = ServerConfig.getListMobs(weaverNumber);
             System.out.println("currentWaveMobsPerPlayer " + currentWaveMobsPerPlayer);
             List<Integer> currentWave = currentWaveMobsPerPlayer.get(playerName);
             System.out.println("currentWave " + currentWave);
@@ -46,7 +46,7 @@ public class MobSpawnHandler {
                 }
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
             } else {
-                mobCheck(player, world);
+                mobCheck(player, world, currentWave);
                 player.sendSystemMessage(
                         Component.translatable("Weave number mobs " + currentWave.size()));
             }
@@ -56,14 +56,15 @@ public class MobSpawnHandler {
     public void end() {
         currentWaveMobsPerPlayer.clear();
     }
-    private static void mobCheck(Player player, ServerLevel world) {
+    private static void mobCheck(Player player, ServerLevel world,  List<Integer> currentWave) {
         String playerName = player.getName().getString();
-        List<Integer> currentWave = currentWaveMobsPerPlayer.get(playerName);
-        if (currentWave != null && !currentWave.isEmpty() && world != null) {
+        if ( currentWave.size() > 0 && world != null) {
             for (int i = 0; i < currentWave.size(); i++) {
                 int mobId = currentWave.get(i);
                 Mob mob = (Mob) world.getEntity(mobId);
+                System.out.println(mob);
                 if (mob != null) {
+                    System.out.println("mob " + mob.getName().getString());
                     Boolean mobIsAlive = mob.isAlive();
                     if (!mobIsAlive) {
                         currentWave.remove(i);
