@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.avatar.avatar_7dayshorders.animation.Animate;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -24,7 +26,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class MobCreate {
     public static List<UUID> spawnMobs(ServerLevel world, Player player, String mobName, int quantity) {
         List<UUID> currentWave = new ArrayList<>();
-        int distante = 20;
+
         @Nullable
         EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(mobName));
         if (entityType != null) {
@@ -33,23 +35,6 @@ public class MobCreate {
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
                     spawnAndTrack(world, mob, player);
-                    double x = player.getX() + world.random.nextInt(20) - distante;
-                    double z = player.getZ() + world.random.nextInt(20) - distante;
-                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
-                    entity.setPos(x, y, z);
-                    mob.setTarget(player);
-                    mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
-
-                    if (mob instanceof Skeleton) {
-                        Skeleton skeleton = (Skeleton) mob;
-                        if (!skeleton.isHolding(Items.BOW)) {
-                            skeleton.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
-                        }
-                        if (skeleton.getOffhandItem().isEmpty() || skeleton.getOffhandItem().getItem() != Items.ARROW) {
-                            skeleton.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.ARROW, 64));
-                        }
-                    }
-                    world.addFreshEntity(entity);
                     currentWave.add(mob.getUUID());
                 }
             }
@@ -57,7 +42,25 @@ public class MobCreate {
         return currentWave;
     }
 
-    public static void spawnAndTrack(ServerLevel world, Mob entity, Player player) {
-
+    public static void spawnAndTrack(ServerLevel world, Mob mob, Player player) {
+        int distant = 20;
+        double x = player.getX() + world.random.nextInt(20) - distant;
+        double z = player.getZ() + world.random.nextInt(20) - distant;
+        double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
+        mob.setPos(x, y, z);
+        Animate.portal(world, player);
+        mob.setTarget(player);
+        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
+        mob.setHealth(1);
+        if (mob instanceof Skeleton) {
+            Skeleton skeleton = (Skeleton) mob;
+            if (!skeleton.isHolding(Items.BOW)) {
+                skeleton.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+            }
+            if (skeleton.getOffhandItem().isEmpty() || skeleton.getOffhandItem().getItem() != Items.ARROW) {
+                skeleton.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.ARROW, 64));
+            }
+        }
+        world.addFreshEntity(mob);
     }
 }

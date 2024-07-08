@@ -1,5 +1,7 @@
 package com.avatar.avatar_7dayshorders.server;
 
+import java.util.UUID;
+
 import com.avatar.avatar_7dayshorders.GlobalConfig;
 import com.avatar.avatar_7dayshorders.Main;
 import com.avatar.avatar_7dayshorders.function.MobSpawnHandler;
@@ -24,6 +26,7 @@ public class Events {
     private static long currentTime = 0;
     private static int periodWeave = 0;
     private static MobSpawnHandler mobSpawnHandler = new MobSpawnHandler();
+    private static boolean endState = false;
 
     public static boolean checkPeriod(double seconds) {
         double divisor = (double) (seconds * 20);
@@ -48,8 +51,11 @@ public class Events {
                 int weaveNumber = periodWeave == 0 ? 0 : (int) day / periodWeave;
                 if (checkPeriod(15) && day % periodWeave == 0 && isNight) {
                     mobSpawnHandler.start(world, weaveNumber);
-                } else if (!isNight && checkPeriod(60)) {
-                    mobSpawnHandler.end();
+                    endState = true;
+                } else if (!isNight && checkPeriod(15) && endState) {
+                    mobSpawnHandler.end(world);
+                    mobSpawnHandler.save();
+                    endState = false;
                 }
             }
 
@@ -60,6 +66,16 @@ public class Events {
     public static void onServerShutdown(ServerStoppingEvent event) {
         mobSpawnHandler.save();
         System.out.println("Server is shutting down!");
+    }
+
+    @SubscribeEvent
+    public static void OnLivingDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof Mob) {
+            UUID mobId = event.getEntity().getUUID();
+            if (currentWorld != null) {
+                MobSpawnHandler.removeMob(mobId, currentWorld);
+            }
+        }
     }
 
     @SubscribeEvent

@@ -35,7 +35,7 @@ public class GlobalConfig {
 
         BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");
         LIST_MOBS_PER_WEAVE = BUILDER.comment(
-                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,quantity,startWeave,endWeave,endWeave\" if 0 = infinity")
+                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,startWeave,endWeave,endWeave,quantity\" if 0 = infinity")
                 .define("default", new ArrayList<String>());
 
         BUILDER.pop();
@@ -70,9 +70,10 @@ public class GlobalConfig {
         List<String> ListSerialized = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             MobWeaveDescripton mobsInfo = list.get(i);
-            String serialized = mobsInfo.getMobName() + "," + mobsInfo.getQuantity() + ","
-                    + mobsInfo.getStartWeave()
-                    + "," + mobsInfo.getEndWeave();
+            String serialized = mobsInfo.getMobName()
+                    + "," + mobsInfo.getStartWeave()
+                    + "," + mobsInfo.getEndWeave()
+                    + "," + mobsInfo.getQuantity();
             ListSerialized.add(serialized);
         }
         return ListSerialized;
@@ -83,9 +84,9 @@ public class GlobalConfig {
         for (String entry : ListSerialized) {
             String[] split = entry.split(",");
             String mobName = split[0];
-            int quantity = Integer.parseInt(split[1]);
-            int startWeave = Integer.parseInt(split[2]);
-            int endWeave = Integer.parseInt(split[3]);
+            int startWeave = Integer.parseInt(split[1]);
+            int endWeave = Integer.parseInt(split[2]);
+            int quantity = Integer.parseInt(split[3]);
             MobWeaveDescripton mobsInfo = new MobWeaveDescripton(mobName, quantity, startWeave, endWeave);
             list.add(mobsInfo);
         }
@@ -99,31 +100,31 @@ public class GlobalConfig {
             if (data.isEmpty()) {
                 ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
                     {
-                        add("minecraft:zombie,1,2,0");
-                        add("minecraft:skeleton,1,2,0");
-                        add("minecraft:creeper,1,2,0");
-                        add("minecraft:spider,1,3,0");
-                        add("minecraft:enderman,1,4,0");
-                        add("minecraft:endermite,1,5,0");
-                        add("minecraft:cave_spider,1,6,0");
-                        add("minecraft:witch,1,7,0");
-                        add("minecraft:blaze,1,8,0");
-                        add("minecraft:ghast,1,9,0");
-                        add("minecraft:slime,1,10,0");
-                        add("minecraft:magma_cube,1,11,0");
-                        add("minecraft:phantom,1,12,0");
-                        add("minecraft:vindicator,1,13,0");
-                        add("minecraft:evoker,1,1,0");
-                        add("minecraft:ravager,1,15,0");
-                        add("minecraft:husk,1,16,0");
-                        add("minecraft:stray,1,17,0");
-                        add("minecraft:drowned,18,2,0");
-                        add("minecraft:guardian,1,19,0");
-                        add("minecraft:elder_guardian,1,20,0");
-                        add("minecraft:shulker,1,21,0");
-                        add("minecraft:illusioner,1,22,0");
-                        add("minecraft:pillager,1,23,0");
-                        add("minecraft:vex,1,24,0");
+                        add("minecraft:zombie,1,10,4");
+                        add("minecraft:skeleton,1,11,4");
+                        add("minecraft:spider,3,12,4");
+                        add("minecraft:creeper,4,13,4");
+                        add("minecraft:cave_spider,5,14,3");
+                        add("minecraft:slime,6,15,3");
+                        add("minecraft:endermite,7,16,3");
+                        add("minecraft:husk,8,17,2");
+                        add("minecraft:stray,9,18,2");
+                        add("minecraft:drowned,10,19,2");
+                        add("minecraft:witch,11,20,2");
+                        add("minecraft:phantom,12,21,2");
+                        add("minecraft:vindicator,13,22,2");
+                        add("minecraft:evoker,14,23,1");
+                        add("minecraft:illusioner,15,24,1");
+                        add("minecraft:pillager,16,25,1");
+                        add("minecraft:vex,17,26,1");
+                        add("minecraft:blaze,18,27,1");
+                        add("minecraft:magma_cube,19,28,1");
+                        add("minecraft:guardian,20,29,1");
+                        add("minecraft:ghast,21,30,1");
+                        add("minecraft:shulker,22,31,1");
+                        add("minecraft:ravager,23,32,1");
+                        add("minecraft:enderman,24,33,1");
+                        add("minecraft:elder_guardian,25,34,1");
                     };
                 };
                 LIST_MOBS_PER_WEAVE.set(defaultMobsPerWeave);
