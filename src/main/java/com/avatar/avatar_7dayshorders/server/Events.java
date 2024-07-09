@@ -41,6 +41,7 @@ public class Events {
                 periodWeave = GlobalConfig.loadPeriodWeave();
                 GlobalConfig.getListMobs(1);
             }
+            System.out.println("teste1");
             if (world != null) {
                 currentWorld = world;
                 long time = world.getDayTime();
