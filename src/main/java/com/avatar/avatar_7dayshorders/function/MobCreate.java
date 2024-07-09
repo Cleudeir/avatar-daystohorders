@@ -6,8 +6,6 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.avatar.avatar_7dayshorders.animation.Animate;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -25,9 +23,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class MobCreate {
-    public static List<UUID> spawnMobs(ServerLevel world, Player player, String mobName, int quantity) {
+    public static List<UUID> spawnMobs(ServerLevel world, Player player, String mobName, int quantity, int distant) {
         List<UUID> currentWave = new ArrayList<>();
-        int distant = 20;
         @Nullable
         EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(mobName));
         if (entityType != null) {
@@ -35,8 +32,8 @@ public class MobCreate {
                 Entity entity = entityType.create(world);
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
-                    double x = player.getX() + world.random.nextInt(20) - distant;
-                    double z = player.getZ() + world.random.nextInt(20) - distant;
+                    double x = player.getX() + world.random.nextInt(3);
+                    double z = player.getZ() - distant;
                     double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
                     // verify if block is air
                     double height = mob.getBbHeight();
@@ -44,7 +41,6 @@ public class MobCreate {
                     BlockPos blockPosHeight = new BlockPos((int) x, (int) y + (int) height, (int) z);
                     if (world.getBlockState(blockPos).isAir() && world.getBlockState(blockPosHeight).isAir()) {
                         mob.setPos(x, y, z);
-                        Animate.portal(world, x, y, z);
                         mob.setTarget(player);
                         mob.addTag("avatar_7dayshorders_mob");
                         mob.canSprint();
@@ -75,4 +71,5 @@ public class MobCreate {
             }
         }
     }
+
 }
