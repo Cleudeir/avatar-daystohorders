@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.avatar.avatar_7dayshorders.animation.Animate;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -26,7 +27,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class MobCreate {
     public static List<UUID> spawnMobs(ServerLevel world, Player player, String mobName, int quantity) {
         List<UUID> currentWave = new ArrayList<>();
-
+        int distant = 20;
         @Nullable
         EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(mobName));
         if (entityType != null) {
@@ -34,24 +35,36 @@ public class MobCreate {
                 Entity entity = entityType.create(world);
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
-                    spawnAndTrack(world, mob, player);
-                    currentWave.add(mob.getUUID());
+                    double x = player.getX() + world.random.nextInt(20) - distant;
+                    double z = player.getZ() + world.random.nextInt(20) - distant;
+                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
+                    // verify if block is air
+                    double height = mob.getBbHeight();
+                    BlockPos blockPos = new BlockPos((int) x, (int) y, (int) z);
+                    BlockPos blockPosHeight = new BlockPos((int) x, (int) y + (int) height, (int) z);
+                    if (world.getBlockState(blockPos).isAir() && world.getBlockState(blockPosHeight).isAir()) {
+                        mob.setPos(x, y, z);
+                        Animate.portal(world, x, y, z);
+                        mob.setTarget(player);
+                        mob.addTag("avatar_7dayshorders_mob");
+                        mob.canSprint();
+                        mob.setPersistenceRequired();
+                        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
+                        addItem(mob);
+                        world.addFreshEntity(mob);
+                        currentWave.add(mob.getUUID());
+                    }
                 }
             }
         }
         return currentWave;
     }
 
-    public static void spawnAndTrack(ServerLevel world, Mob mob, Player player) {
-        int distant = 20;
-        double x = player.getX() + world.random.nextInt(20) - distant;
-        double z = player.getZ() + world.random.nextInt(20) - distant;
-        double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
-        mob.setPos(x, y, z);
-        Animate.portal(world, player);
-        mob.setTarget(player);
-        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
-        mob.setHealth(1);
+    private static void addItem(Mob mob) {
+        mob.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+        mob.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.LEATHER_CHESTPLATE));
+        mob.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.LEATHER_LEGGINGS));
+        mob.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.LEATHER_BOOTS));
         if (mob instanceof Skeleton) {
             Skeleton skeleton = (Skeleton) mob;
             if (!skeleton.isHolding(Items.BOW)) {
@@ -61,6 +74,5 @@ public class MobCreate {
                 skeleton.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.ARROW, 64));
             }
         }
-        world.addFreshEntity(mob);
     }
 }

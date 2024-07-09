@@ -43,15 +43,17 @@ public class MobSpawnHandler {
                 world.playSound(null, player.blockPosition(), SoundEvents.BELL_RESONATE,
                         SoundSource.HOSTILE, 1.0F, 1.0F);
             } else if (currentWave.isEmpty()) {
+
                 player.sendSystemMessage(
                         Component.translatable("Start new Weave!"));
+                world.playSound(null, player.blockPosition(), SoundEvents.BELL_RESONATE,
+                        SoundSource.HOSTILE, 1.0F, 1.0F);
 
                 System.out.println("mobsInfo >>>>>>> " + weaverNumberListMobs);
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
                     System.out.println("mobsInfo >>>>>>> " + mobsInfo.getMobName() + " " + mobsInfo.getQuantity());
                     List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
                             mobsInfo.getQuantity());
-
                     currentWave.addAll(create);
                 }
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
@@ -85,6 +87,9 @@ public class MobSpawnHandler {
                         mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
                     }
                     mobTeleport(mob, world, player);
+                } else {
+                    currentWave.remove(mobId);
+                    currentWaveMobsPerPlayer.put(player.getName().getString(), currentWave);
                 }
             }
         }
