@@ -24,6 +24,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.fml.common.Mod;
 
@@ -39,8 +40,6 @@ public class MobSpawnHandler {
         for (ServerPlayer player : players) {
             String playerName = player.getName().getString();
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
-
-            System.out.println("currentWave " + currentWave);
             if (currentWave == null) {
                 currentWave = ServerConfig.loadPlayerMobs(playerName);
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
@@ -49,17 +48,15 @@ public class MobSpawnHandler {
                 world.playSound(null, player.blockPosition(), SoundEvents.BELL_RESONATE,
                         SoundSource.HOSTILE, 1.0F, 1.0F);
             } else if (currentWave.isEmpty()) {
-                int distant = 20;
+                int distant = 20 + world.random.nextInt(10);
                 if (portal.size() > 0) {
                     destroyNetherPortal(world);
                 }
-                portal = createNetherPortal(world, player, distant);
+                portal = createCastle(world, player, distant);
                 player.sendSystemMessage(
                         Component.translatable("Start new Weave!"));
                 world.playSound(null, player.blockPosition(), SoundEvents.BELL_RESONATE,
                         SoundSource.HOSTILE, 1.0F, 1.0F);
-
-                System.out.println("mobsInfo >>>>>>> " + weaverNumberListMobs);
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
                     System.out.println("mobsInfo >>>>>>> " + mobsInfo.getMobName() + " " + mobsInfo.getQuantity());
                     List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
@@ -144,61 +141,70 @@ public class MobSpawnHandler {
         System.out.println(" Data saved " + currentWaveMobsPerPlayer);
     }
 
-    private static List<BlockPos> createNetherPortal(ServerLevel world, Player player, int distant) {
+    private static List<BlockPos> blockConstruction(int add, BlockPos portalPos, ServerLevel world, int index) {
+        List<BlockPos> frame = new ArrayList<>();
+        BlockState portalState = Blocks.STONE_BRICKS.defaultBlockState();
+        for (int i = 0; i <= add; i++) {
+            int portalX = portalPos.getX() + i;
+            int portalY = portalPos.getY();
+            int portalZ = portalPos.getZ() + index;
+            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
+            world.setBlock(newPos, portalState, 3);
+            frame.add(newPos);
+        }
+        for (int i = 0; i <= add; i++) {
+            int portalX = portalPos.getX() + add;
+            int portalY = portalPos.getY() + i;
+            int portalZ = portalPos.getZ() + index;
+            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
+            world.setBlock(newPos, portalState, 3);
+            frame.add(newPos);
+        }
+        for (int i = 0; i <= add; i++) {
+            int portalX = portalPos.getX();
+            int portalY = portalPos.getY() + i;
+            int portalZ = portalPos.getZ() + index;
+            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
+            world.setBlock(newPos, portalState, 3);
+            frame.add(newPos);
+        }
+        for (int i = 0; i <= add; i++) {
+            int portalX = portalPos.getX() + i;
+            int portalY = portalPos.getY() + add;
+            int portalZ = portalPos.getZ() + index;
+            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
+            world.setBlock(newPos, portalState, 3);
+            frame.add(newPos);
+        }
+        // Create the portal frame
+        BlockState frameState = Blocks.LIGHT.defaultBlockState();
+        for (int i = 1; i < add; i++) {
+            for (int j = 1; j < add; j++) {
+                int portalX = portalPos.getX() + i;
+                int portalY = portalPos.getY() + j;
+                int portalZ = portalPos.getZ() + index;
+                BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
+                world.setBlock(newPos, frameState, 3);
+                frame.add(newPos);
+            }
+        }
+        return frame;
+    }
+
+    private static List<BlockPos> createCastle(ServerLevel world, Player player, int distant) {
         // Create the Nether portal
         BlockPos pos = player.blockPosition().below(); // Get the block position below the player
-        int x = pos.getX() - distant;
+        int add = 4;
+        int x = pos.getX() - (int) distant - (add / 2);
         int z = pos.getZ() - distant;
         int y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
 
         // Create the portal frame
         BlockPos portalPos = new BlockPos(x, y, z);
         List<BlockPos> frame = new ArrayList<>();
-        // Create the portal inside
-        int height = 20;
-        for (int i = 0; i <= height; i++) {
-            int portalX = portalPos.getX() + 6;
-            int portalY = portalPos.getY() + i;
-            int portalZ = portalPos.getZ();
-            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
-            world.setBlock(newPos, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
-            frame.add(newPos);
+        for (int i = 0; i <= add; i++) {
+            frame.addAll(blockConstruction(add, portalPos, world, i));
         }
-        for (int i = 0; i <= height; i++) {
-            int portalX = portalPos.getX() + 7;
-            int portalY = portalPos.getY() + i;
-            int portalZ = portalPos.getZ();
-            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
-            world.setBlock(newPos, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
-            frame.add(newPos);
-        }
-        for (int i = 0; i <= height; i++) {
-            int portalX = portalPos.getX();
-            int portalY = portalPos.getY() + i;
-            int portalZ = portalPos.getZ();
-            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
-            world.setBlock(newPos, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
-            frame.add(newPos);
-        }
-        for (int i = 0; i <= height; i++) {
-            int portalX = portalPos.getX() - 1;
-            int portalY = portalPos.getY() + i;
-            int portalZ = portalPos.getZ();
-            BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
-            world.setBlock(newPos, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
-            frame.add(newPos);
-        }
-        for (int i = 1; i < 6; i++) {
-            for (int j = 1; j < 6; j++) {
-                int portalX = portalPos.getX() + i;
-                int portalY = portalPos.getY() + j;
-                int portalZ = portalPos.getZ();
-                BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
-                world.setBlock(newPos, Blocks.AIR.defaultBlockState(), 3);
-                frame.add(newPos);
-            }
-        }
-
         world.playSound(null, portalPos, SoundEvents.PORTAL_TRAVEL, SoundSource.BLOCKS, 1.0F, 1.0F);
         return frame;
     }

@@ -19,6 +19,8 @@ import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -32,8 +34,8 @@ public class MobCreate {
                 Entity entity = entityType.create(world);
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
-                    double x = player.getX() + world.random.nextInt(3);
-                    double z = player.getZ() - distant;
+                    double x = player.getX() - distant;
+                    double z = player.getZ() - distant - 3;
                     double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
                     // verify if block is air
                     double height = mob.getBbHeight();

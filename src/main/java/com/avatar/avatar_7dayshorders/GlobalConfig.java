@@ -101,7 +101,7 @@ public class GlobalConfig {
                 ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
                     {
                         add("minecraft:zombie,1,10,4");
-                        add("minecraft:skeleton,1,11,4");
+                        add("minecraft:skeleton,2,11,4");
                         add("minecraft:spider,3,12,4");
                         add("minecraft:creeper,4,13,4");
                         add("minecraft:cave_spider,5,14,3");
