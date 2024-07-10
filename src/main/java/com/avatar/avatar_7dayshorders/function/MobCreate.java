@@ -19,8 +19,6 @@ import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -35,8 +33,8 @@ public class MobCreate {
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
                     double x = player.getX() - distant;
-                    double z = player.getZ() - distant - 3;
-                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z);
+                    double z = player.getZ() - distant;
+                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z) + 100;
                     // verify if block is air
                     double height = mob.getBbHeight();
                     BlockPos blockPos = new BlockPos((int) x, (int) y, (int) z);
@@ -47,6 +45,7 @@ public class MobCreate {
                         mob.addTag("avatar_7dayshorders_mob");
                         mob.canSprint();
                         mob.setPersistenceRequired();
+
                         mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
                         addItem(mob);
                         world.addFreshEntity(mob);
