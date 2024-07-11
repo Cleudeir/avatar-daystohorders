@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 
 import com.avatar.avatar_7dayshorders.GlobalConfig;
 import com.avatar.avatar_7dayshorders.Main;
+import com.avatar.avatar_7dayshorders.Object.MobWeaveDescripton;
 import com.avatar.avatar_7dayshorders.animation.Animate;
 import com.avatar.avatar_7dayshorders.server.ServerConfig;
 
@@ -22,6 +23,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.common.Mod;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = Main.MODID)
 public class MobSpawnHandler {
@@ -40,6 +42,11 @@ public class MobSpawnHandler {
 
     public void start(ServerLevel world, Integer weaverNumber) {
         List<MobWeaveDescripton> weaverNumberListMobs = GlobalConfig.getListMobs(weaverNumber);
+        int totalMobs = 0;
+        int maxMobs = GlobalConfig.loadMaxMobsPerPlayer();
+        for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
+            totalMobs += mobsInfo.getQuantity();
+        }
         Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
         for (ServerPlayer player : players) {
 
@@ -69,10 +76,15 @@ public class MobSpawnHandler {
                 message(player, "Start new Weave!");
 
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
-                    message(player, mobsInfo.getMobName() + " " + mobsInfo.getQuantity());
+                    int quantityWeight = (int) Math.floor(maxMobs * mobsInfo.getQuantity() / totalMobs);
+                    if (quantityWeight == 0) {
+                        quantityWeight = 1;
+                    }
+                    message(player,
+                            mobsInfo.getMobName() + " qnt: " + mobsInfo.getQuantity() + " weight:" + quantityWeight);
 
                     List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
-                            mobsInfo.getQuantity(), distant, index);
+                            quantityWeight, distant, index);
                     currentWave.addAll(create);
                 }
 
@@ -131,7 +143,7 @@ public class MobSpawnHandler {
     }
 
     public void save() {
-        ServerConfig.save(currentWaveMobsPerPlayer);
+        ServerConfig.saveCurrentWaveMobsPerPlayer(currentWaveMobsPerPlayer);
         System.out.println(" Data saved " + currentWaveMobsPerPlayer);
     }
 

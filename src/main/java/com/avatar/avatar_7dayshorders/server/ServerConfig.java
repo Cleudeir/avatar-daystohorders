@@ -8,26 +8,41 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class ServerConfig {
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static ForgeConfigSpec CONFIG;
-  
+
     public static ForgeConfigSpec.ConfigValue<List<String>> CURRENT_WAVE_MOBS_PER_PLAYER;
+    public static ForgeConfigSpec.ConfigValue<List<String>> PORTAL_BLOCKS;
 
     static {
         setupConfig();
     }
 
     private static void setupConfig() {
-      
+
         BUILDER.comment("Current wave mobs per player").push("currentWaveMobsPerPlayer");
         CURRENT_WAVE_MOBS_PER_PLAYER = BUILDER
                 .comment("Current wave mobs per player")
+                .define("default", new ArrayList<String>());
+        BUILDER.pop();
+        BUILDER.comment("Portal blocks destroyed when create new wave").push("portalBlocks");
+        PORTAL_BLOCKS = BUILDER
+                .comment("Portal blocks destroyed when create new wave")
                 .define("default", new ArrayList<String>());
         BUILDER.pop();
 
@@ -72,11 +87,50 @@ public class ServerConfig {
         return currentWaveMobsPerPlayer;
     }
 
-    public static void save(Map<String, List<UUID>> currentWaveMobsPerPlayer) {
+    public static List<String> serializeBlockPosMap(Map<BlockPos, BlockState> list) {
+        List<String> ListBlockPos = new ArrayList<>();
+        for (Map.Entry<BlockPos, BlockState> entry : list.entrySet()) {
+            BlockPos blockPos = entry.getKey();
+            BlockState state = entry.getValue();
+            MutableComponent blockName = state.getBlock().getName();
+            String stringBlockPos = blockPos.getX() + "," + blockPos.getY() + "," + blockPos.getZ() + ":"
+                    + blockName;
+            ListBlockPos.add(stringBlockPos);
+        }
+        return ListBlockPos;
+    }
+
+    private static Map<BlockPos, BlockState> deserializeBlockPosMap(List<String> MapBlockPos, ServerLevel world) {
+        Map<BlockPos, BlockState> map = new HashMap<>();
+        for (String entry : MapBlockPos) {
+            String[] split = entry.split(",");
+            int x = Integer.parseInt(split[0]);
+            int y = Integer.parseInt(split[1]);
+            int z = Integer.parseInt(split[2]);
+            String blockName = split[3];
+            @Nullable
+            BlockState blockState = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName))
+                    .defaultBlockState();
+
+            BlockPos blockPos = new BlockPos(x, y, z);
+            map.put(blockPos, blockState);
+        }
+        return map;
+    }
+
+    public static void saveCurrentWaveMobsPerPlayer(Map<String, List<UUID>> currentWaveMobsPerPlayer) {
         if (!CONFIG.isLoaded()) {
             return;
         }
         CURRENT_WAVE_MOBS_PER_PLAYER.set(serializeCurrentWaveMobsPerPlayer(currentWaveMobsPerPlayer));
+        CONFIG.save();
+    }
+
+    public static void savePortalBlocks(Map<BlockPos, BlockState> portalBlocks) {
+        if (!CONFIG.isLoaded()) {
+            return;
+        }
+        PORTAL_BLOCKS.set(serializeBlockPosMap(portalBlocks));
         CONFIG.save();
     }
 
@@ -92,5 +146,15 @@ public class ServerConfig {
         return data.get(PlayerName);
     }
 
-   
+    public static Map<BlockPos, BlockState> loadPortalBlocks(ServerLevel world) {
+        // Load the config if not already loaded
+        Map<BlockPos, BlockState> portalBlocks = new HashMap<>();
+        if (CONFIG.isLoaded()) {
+            // Retrieve data from config
+            portalBlocks = deserializeBlockPosMap(PORTAL_BLOCKS.get(), world);
+            System.out.println("Data loaded from config");
+        }
+        return portalBlocks;
+    }
+
 }

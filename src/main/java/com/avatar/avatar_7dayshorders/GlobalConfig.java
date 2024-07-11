@@ -4,41 +4,49 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.avatar.avatar_7dayshorders.function.MobWeaveDescripton;
+import com.avatar.avatar_7dayshorders.Object.MobWeaveDescripton;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class GlobalConfig {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static ForgeConfigSpec CONFIG;
 
     // Define your config values here
-    public static ForgeConfigSpec.ConfigValue<List<String>> BROKEN_BLOCKS;
-    public static ForgeConfigSpec.ConfigValue<List<String>> AROUND_BLOCKS;
-    public static ForgeConfigSpec.ConfigValue<List<String>> PERIMETER_BLOCKS;
     public static ForgeConfigSpec.ConfigValue<List<String>> LIST_MOBS_PER_WEAVE;
-
+    public static ForgeConfigSpec.ConfigValue<String> MAX_MOBS_PER_PLAYER;
     public static ForgeConfigSpec.ConfigValue<String> PERIOD_WEAVE;
+
     // Initialize config values without static initializer block
     static {
         setupConfig();
     }
 
     private static void setupConfig() {
-        // PERIOD_WEAVE
+        BUILDER.comment("Max mobs per player").push("maxMobsPerPlayer");
+        MAX_MOBS_PER_PLAYER = BUILDER
+                .comment("Max mobs per player")
+                .define("default", "15");
+        BUILDER.pop();
+
         BUILDER.comment("Period Weave").push("periodWeave");
         PERIOD_WEAVE = BUILDER
                 .comment("Default period weave")
-                .define("default", "-1");
+                .define("default", "7");
+        BUILDER.pop();
 
         BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");
         LIST_MOBS_PER_WEAVE = BUILDER.comment(
-                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,startWeave,endWeave,endWeave,quantity\" if 0 = infinity")
+                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,startWeave,endWeave,endWeave,weightOfMob\"\nif 0 = infinity\nQuantity mob type per weave per player:\nA= max mobs\nB= Weight of mob\nC= Sum of all Weight mobs this weave\nCalc: A * B / C")
                 .define("default", new ArrayList<String>());
 
         BUILDER.pop();
+
         CONFIG = BUILDER.build();
     }
 
@@ -46,22 +54,20 @@ public class GlobalConfig {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG);
     }
 
-    // Method to save data
-    public static void savePeriodWeave(int periodWeave) {
-        String periodWeaveString = String.valueOf(periodWeave);
-        PERIOD_WEAVE.set(periodWeaveString);
-        CONFIG.save();
-    }
-
     public static int loadPeriodWeave() {
         int data = 7;
         if (CONFIG.isLoaded()) {
             int remember = Integer.valueOf(PERIOD_WEAVE.get());
-            if (remember == -1) {
-                savePeriodWeave(data);
-            } else {
-                data = remember;
-            }
+            data = remember;
+        }
+        return data;
+    }
+
+    public static int loadMaxMobsPerPlayer() {
+        int data = 15;
+        if (CONFIG.isLoaded()) {
+            int remember = Integer.valueOf(MAX_MOBS_PER_PLAYER.get());
+            data = remember;
         }
         return data;
     }
@@ -100,31 +106,31 @@ public class GlobalConfig {
             if (data.isEmpty()) {
                 ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
                     {
-                        add("minecraft:zombie,1,10,4");
-                        add("minecraft:skeleton,2,11,4");
-                        add("minecraft:spider,3,12,4");
-                        add("minecraft:creeper,4,13,4");
-                        add("minecraft:cave_spider,5,14,3");
-                        add("minecraft:slime,6,15,3");
-                        add("minecraft:endermite,7,16,3");
-                        add("minecraft:husk,8,17,2");
-                        add("minecraft:stray,9,18,2");
-                        add("minecraft:drowned,10,19,2");
-                        add("minecraft:witch,11,20,2");
-                        add("minecraft:phantom,12,21,2");
-                        add("minecraft:vindicator,13,22,2");
-                        add("minecraft:evoker,14,23,1");
-                        add("minecraft:illusioner,15,24,1");
-                        add("minecraft:pillager,16,25,1");
-                        add("minecraft:vex,17,26,1");
-                        add("minecraft:blaze,18,27,1");
-                        add("minecraft:magma_cube,19,28,1");
-                        add("minecraft:guardian,20,29,1");
-                        add("minecraft:ghast,21,30,1");
-                        add("minecraft:shulker,22,31,1");
-                        add("minecraft:ravager,23,32,1");
-                        add("minecraft:enderman,24,33,1");
-                        add("minecraft:elder_guardian,25,34,1");
+                        add("minecraft:zombie,1,0,10");
+                        add("minecraft:skeleton,2,0,4");
+                        add("minecraft:spider,3,0,4");
+                        add("minecraft:creeper,4,0,4");
+                        add("minecraft:cave_spider,5,0,3");
+                        add("minecraft:slime,6,0,3");
+                        add("minecraft:endermite,7,0,3");
+                        add("minecraft:husk,8,0,2");
+                        add("minecraft:stray,9,0,2");
+                        add("minecraft:drowned,0,19,2");
+                        add("minecraft:witch,11,0,2");
+                        add("minecraft:phantom,12,0,2");
+                        add("minecraft:vindicator,13,0,2");
+                        add("minecraft:evoker,14,0,1");
+                        add("minecraft:illusioner,15,0,1");
+                        add("minecraft:pillager,16,0,1");
+                        add("minecraft:vex,17,0,1");
+                        add("minecraft:blaze,18,0,1");
+                        add("minecraft:magma_cube,19,0,1");
+                        add("minecraft:guardian,20,0,1");
+                        add("minecraft:ghast,21,0,1");
+                        add("minecraft:shulker,22,0,1");
+                        add("minecraft:ravager,23,0,1");
+                        add("minecraft:enderman,24,0,1");
+                        add("minecraft:elder_guardian,25,0,1");
                     };
                 };
                 LIST_MOBS_PER_WEAVE.set(defaultMobsPerWeave);

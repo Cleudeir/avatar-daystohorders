@@ -5,15 +5,10 @@ import java.util.UUID;
 import com.avatar.avatar_7dayshorders.GlobalConfig;
 import com.avatar.avatar_7dayshorders.Main;
 import com.avatar.avatar_7dayshorders.function.MobSpawnHandler;
-import com.avatar.avatar_7dayshorders.function.ModCommands;
-import com.mojang.brigadier.CommandDispatcher;
 
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -75,14 +70,6 @@ public class Events {
                 MobSpawnHandler.removeMob(mobId, currentWorld);
             }
         }
-    }
-
-    @SubscribeEvent
-    public static void onRegisterCommands(RegisterCommandsEvent event) {
-        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
-        dispatcher.register(Commands.literal("startwave")
-                .requires(source -> source.hasPermission(2)) // Requires a permission level of 2 (cheats enabled)
-                .executes(ModCommands::executeStartWave));
     }
 
 }
