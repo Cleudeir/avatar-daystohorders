@@ -53,6 +53,7 @@ public class MobCreate {
                         mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
                         addItem(mob);
                         world.addFreshEntity(mob);
+
                         currentWave.add(mob.getUUID());
                     }
                 }
