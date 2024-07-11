@@ -57,8 +57,8 @@ public class MobSpawnHandler {
 
             } else if (currentWave.isEmpty()) {
 
-                int distant = 15;// + world.random.nextInt(15);
-                distant = 0;
+                int distant = 15 + world.random.nextInt(15);
+                // distant = 0;
                 int index = 6;
 
                 sound(player, world);
@@ -69,6 +69,8 @@ public class MobSpawnHandler {
                 message(player, "Start new Weave!");
 
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
+                    message(player, mobsInfo.getMobName() + " " + mobsInfo.getQuantity());
+
                     List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
                             mobsInfo.getQuantity(), distant, index);
                     currentWave.addAll(create);

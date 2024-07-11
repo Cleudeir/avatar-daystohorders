@@ -49,11 +49,10 @@ public class Events {
                 currentTime = time;
                 int day = (int) (time / 24000);
                 int weaveNumber = periodWeave == 0 ? 0 : (int) day / periodWeave;
-                if (checkPeriod(10) && day > 0 && (day % periodWeave) == 0 && isNight) {
-                    System.out.println(day + day % periodWeave + " " + isNight);
+                if (checkPeriod(8) && day > 0 && day % periodWeave == 0 && isNight) {
                     mobSpawnHandler.start(world, weaveNumber);
                     endState = true;
-                } else if (checkPeriod(15) && endState) {
+                } else if (checkPeriod(15) && endState && !isNight) {
                     mobSpawnHandler.end(world);
                     mobSpawnHandler.save();
                     endState = false;
