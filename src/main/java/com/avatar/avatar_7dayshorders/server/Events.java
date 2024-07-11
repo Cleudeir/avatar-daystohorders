@@ -41,7 +41,6 @@ public class Events {
                 periodWeave = GlobalConfig.loadPeriodWeave();
                 GlobalConfig.getListMobs(1);
             }
-            // System.out.println("teste1");
             if (world != null) {
                 currentWorld = world;
                 long time = world.getDayTime();
@@ -50,7 +49,8 @@ public class Events {
                 currentTime = time;
                 int day = (int) (time / 24000);
                 int weaveNumber = periodWeave == 0 ? 0 : (int) day / periodWeave;
-                if (checkPeriod(5) && day > 0 && day % periodWeave == 0 && isNight) {
+                if (checkPeriod(10) && day > 0 && (day % periodWeave) == 0 && isNight) {
+                    System.out.println(day + day % periodWeave + " " + isNight);
                     mobSpawnHandler.start(world, weaveNumber);
                     endState = true;
                 } else if (checkPeriod(15) && endState) {

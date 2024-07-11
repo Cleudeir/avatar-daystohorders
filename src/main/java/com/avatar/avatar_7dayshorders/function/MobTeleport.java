@@ -14,7 +14,7 @@ public class MobTeleport {
         double firstMobPosY = mob.getY();
         double distance = Math
                 .sqrt(Math.pow(playerPosX - firstMobPosX, 2) + Math.pow(playerPosY - firstMobPosY, 2));
-        if (distance > 100) {
+        if (distance > 60) {
             System.out.println("Distance: " + distance + ' ' + mob.getName().getString());
             double x = playerPosX + world.random.nextInt(20) - distant;
             double z = playerPosY + world.random.nextInt(20) - distant;

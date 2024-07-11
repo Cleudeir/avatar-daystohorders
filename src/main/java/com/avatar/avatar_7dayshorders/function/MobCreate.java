@@ -19,11 +19,14 @@ import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class MobCreate {
-    public static List<UUID> spawnMobs(ServerLevel world, Player player, String mobName, int quantity, int distant) {
+    public static List<UUID> spawnMobs(ServerLevel world, Player player, String mobName, int quantity, int distant,
+            int index) {
         List<UUID> currentWave = new ArrayList<>();
         @Nullable
         EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(mobName));
@@ -32,20 +35,21 @@ public class MobCreate {
                 Entity entity = entityType.create(world);
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
-                    double x = player.getX() - distant;
+                    double x = player.getX() - distant - (int) (index / 2);
                     double z = player.getZ() - distant;
-                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z) + 100;
-                    // verify if block is air
+                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z) + 1;
                     double height = mob.getBbHeight();
                     BlockPos blockPos = new BlockPos((int) x, (int) y, (int) z);
                     BlockPos blockPosHeight = new BlockPos((int) x, (int) y + (int) height, (int) z);
-                    if (world.getBlockState(blockPos).isAir() && world.getBlockState(blockPosHeight).isAir()) {
+                    BlockState blockState = world.getBlockState(blockPos);
+                    BlockState blockStateHeight = world.getBlockState(blockPosHeight);
+                    System.out.println(blockState + " " + blockStateHeight);
+                    if (blockState.isAir() && blockStateHeight.isAir() && blockState.getBlock() != Blocks.WATER) {
                         mob.setPos(x, y, z);
                         mob.setTarget(player);
                         mob.addTag("avatar_7dayshorders_mob");
                         mob.canSprint();
                         mob.setPersistenceRequired();
-
                         mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
                         addItem(mob);
                         world.addFreshEntity(mob);

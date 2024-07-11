@@ -42,34 +42,51 @@ public class MobSpawnHandler {
         List<MobWeaveDescripton> weaverNumberListMobs = GlobalConfig.getListMobs(weaverNumber);
         Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
         for (ServerPlayer player : players) {
+
             String playerName = player.getName().getString();
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
+
             if (currentWave == null) {
+
                 currentWave = ServerConfig.loadPlayerMobs(playerName);
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
-                message(player, "The night starts, the mobs are incoming! " + currentWave.size());
+
+                message(player, currentWave.size() + " Mobs are still alive!");
+                message(player, "The night starts, the mobs are incoming! ");
                 sound(player, world);
+
             } else if (currentWave.isEmpty()) {
-                int distant = 20 + world.random.nextInt(10);
+
+                int distant = 15;// + world.random.nextInt(15);
+                distant = 0;
+                int index = 6;
+
                 sound(player, world);
-                PortalSpawnHandler.destroyPortal(world);
-                PortalSpawnHandler.createPortal(world, player, distant);
-                message(player, "Start new Weave! " + currentWave.size());
+                PortalSpawnHandler.recreatePortal(world);
+                PortalSpawnHandler.createPortal(world, player, distant, index);
+
+                message(player, currentWave.size() + " Mobs are still alive!");
+                message(player, "Start new Weave!");
+
                 for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
                     List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
-                            mobsInfo.getQuantity(), distant);
+                            mobsInfo.getQuantity(), distant, index);
                     currentWave.addAll(create);
                 }
+
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
+
             } else {
+
                 mobCheck(player, world, currentWave);
-                message(player, "Weave number mobs " + currentWave.size());
+                message(player, currentWave.size() + " Mobs are still alive!");
+
             }
         }
     }
 
     public void end(ServerLevel world) {
-        PortalSpawnHandler.destroyPortal(world);
+        PortalSpawnHandler.recreatePortal(world);
         currentWaveMobsPerPlayer.clear();
         Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
         for (ServerPlayer player : players) {
