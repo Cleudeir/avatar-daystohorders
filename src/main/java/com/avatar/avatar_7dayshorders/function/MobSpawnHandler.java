@@ -9,8 +9,8 @@ import java.util.function.Predicate;
 
 import com.avatar.avatar_7dayshorders.GlobalConfig;
 import com.avatar.avatar_7dayshorders.Main;
-import com.avatar.avatar_7dayshorders.Object.MobWeaveDescripton;
 import com.avatar.avatar_7dayshorders.animation.Animate;
+import com.avatar.avatar_7dayshorders.object.MobWeaveDescripton;
 import com.avatar.avatar_7dayshorders.server.ServerConfig;
 
 import net.minecraft.network.chat.Component;

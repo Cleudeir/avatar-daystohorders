@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.avatar.avatar_7dayshorders.Object.MobWeaveDescripton;
+import com.avatar.avatar_7dayshorders.object.MobWeaveDescripton;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
