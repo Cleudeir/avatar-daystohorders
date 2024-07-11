@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.avatar.avatar_7dayshorders.GlobalConfig;
 import com.avatar.avatar_7dayshorders.Main;
 import com.avatar.avatar_7dayshorders.function.MobSpawnHandler;
+import com.avatar.avatar_7dayshorders.function.PortalSpawnHandler;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
@@ -59,6 +60,7 @@ public class Events {
     @SubscribeEvent
     public static void onServerShutdown(ServerStoppingEvent event) {
         mobSpawnHandler.save();
+        PortalSpawnHandler.savePortalBlock();
         System.out.println("Server is shutting down!");
     }
 

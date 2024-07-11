@@ -13,8 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -100,7 +98,7 @@ public class ServerConfig {
         return ListBlockPos;
     }
 
-    private static Map<BlockPos, BlockState> deserializeBlockPosMap(List<String> MapBlockPos, ServerLevel world) {
+    private static Map<BlockPos, BlockState> deserializeBlockPosMap(List<String> MapBlockPos) {
         Map<BlockPos, BlockState> map = new HashMap<>();
         for (String entry : MapBlockPos) {
             String[] split = entry.split(",");
@@ -112,6 +110,7 @@ public class ServerConfig {
             BlockState blockState = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName))
                     .defaultBlockState();
 
+            System.out.println(blockState);
             BlockPos blockPos = new BlockPos(x, y, z);
             map.put(blockPos, blockState);
         }
@@ -146,12 +145,12 @@ public class ServerConfig {
         return data.get(PlayerName);
     }
 
-    public static Map<BlockPos, BlockState> loadPortalBlocks(ServerLevel world) {
+    public static Map<BlockPos, BlockState> loadPortalBlocks() {
         // Load the config if not already loaded
         Map<BlockPos, BlockState> portalBlocks = new HashMap<>();
         if (CONFIG.isLoaded()) {
             // Retrieve data from config
-            portalBlocks = deserializeBlockPosMap(PORTAL_BLOCKS.get(), world);
+            portalBlocks = deserializeBlockPosMap(PORTAL_BLOCKS.get());
             System.out.println("Data loaded from config");
         }
         return portalBlocks;

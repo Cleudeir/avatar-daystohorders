@@ -23,7 +23,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.common.Mod;
-import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = Main.MODID)
 public class MobSpawnHandler {

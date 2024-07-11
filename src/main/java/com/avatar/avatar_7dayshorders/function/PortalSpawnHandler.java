@@ -1,5 +1,10 @@
 package com.avatar.avatar_7dayshorders.function;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.avatar.avatar_7dayshorders.server.ServerConfig;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -9,12 +14,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
-import java.util.Map;
-import java.util.HashMap;
-
 public class PortalSpawnHandler {
 
     private static Map<BlockPos, BlockState> portal = new HashMap<>();
+
+    static {
+        portal = ServerConfig.loadPortalBlocks();
+    }
 
     public static void DestroyBlockConstruction(int index, BlockPos portalPos, ServerLevel world) {
         BlockState frameState = Blocks.AIR.defaultBlockState();
@@ -58,5 +64,10 @@ public class PortalSpawnHandler {
             }
         }
         portal.clear();
+        ServerConfig.savePortalBlocks(portal);
+    }
+
+    public static void savePortalBlock() {
+        ServerConfig.savePortalBlocks(portal);
     }
 }

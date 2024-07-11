@@ -9,9 +9,6 @@ import com.avatar.avatar_7dayshorders.Object.MobWeaveDescripton;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class GlobalConfig {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
@@ -42,7 +39,7 @@ public class GlobalConfig {
 
         BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");
         LIST_MOBS_PER_WEAVE = BUILDER.comment(
-                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,startWeave,endWeave,endWeave,weightOfMob\"\nif 0 = infinity\nQuantity mob type per weave per player:\nA= max mobs\nB= Weight of mob\nC= Sum of all Weight mobs this weave\nCalc: A * B / C")
+                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,startWeave,endWeave,endWeave,weightOfMob\"\n if endWeave = 0 = infinity\n Quantity mob type per weave per player:\n A= Max mobs\nB= Weight of mob\n C= Sum of all Weight mobs this weave\n Calc: A * B / C")
                 .define("default", new ArrayList<String>());
 
         BUILDER.pop();
