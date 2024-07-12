@@ -1,11 +1,11 @@
-package com.avatar.avatar_7dayshorders.server;
+package com.avatar.avatar_daystohorders.server;
 
 import java.util.UUID;
 
-import com.avatar.avatar_7dayshorders.GlobalConfig;
-import com.avatar.avatar_7dayshorders.Main;
-import com.avatar.avatar_7dayshorders.function.MobSpawnHandler;
-import com.avatar.avatar_7dayshorders.function.PortalSpawnHandler;
+import com.avatar.avatar_daystohorders.GlobalConfig;
+import com.avatar.avatar_daystohorders.Main;
+import com.avatar.avatar_daystohorders.function.MobSpawnHandler;
+import com.avatar.avatar_daystohorders.function.PortalSpawnHandler;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;

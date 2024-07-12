@@ -1,4 +1,4 @@
-package com.avatar.avatar_7dayshorders.function;
+package com.avatar.avatar_daystohorders.function;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class MobCreate {
                     if (blockState.isAir() && blockStateHeight.isAir() && blockState.getBlock() != Blocks.WATER) {
                         mob.setPos(x, y, z);
                         mob.setTarget(player);
-                        mob.addTag("avatar_7dayshorders_mob");
+                        mob.addTag("avatar_daystohorders_mob");
                         mob.canSprint();
                         mob.setPersistenceRequired();
                         mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));

@@ -1,4 +1,4 @@
-package com.avatar.avatar_7dayshorders.object;
+package com.avatar.avatar_daystohorders.object;
 
 public class MobWeaveDescripton {
     private final String mobName;

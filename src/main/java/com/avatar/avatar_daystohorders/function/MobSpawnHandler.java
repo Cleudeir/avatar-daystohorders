@@ -1,4 +1,4 @@
-package com.avatar.avatar_7dayshorders.function;
+package com.avatar.avatar_daystohorders.function;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,13 +7,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import com.avatar.avatar_7dayshorders.GlobalConfig;
-import com.avatar.avatar_7dayshorders.Main;
-import com.avatar.avatar_7dayshorders.animation.Animate;
-import com.avatar.avatar_7dayshorders.object.MobWeaveDescripton;
-import com.avatar.avatar_7dayshorders.server.ServerConfig;
+import com.avatar.avatar_daystohorders.GlobalConfig;
+import com.avatar.avatar_daystohorders.Main;
+import com.avatar.avatar_daystohorders.animation.Animate;
+import com.avatar.avatar_daystohorders.object.MobWeaveDescripton;
+import com.avatar.avatar_daystohorders.server.ServerConfig;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -28,6 +30,14 @@ import net.minecraftforge.fml.common.Mod;
 public class MobSpawnHandler {
 
     private static final Map<String, List<UUID>> currentWaveMobsPerPlayer = new HashMap<>();
+
+    public static void sendTitleMessage(ServerPlayer player, String title, int fadeIn, int stay,
+            int fadeOut) {
+        // Send the title
+        player.connection.send(new ClientboundSetTitleTextPacket(Component.literal(title)));
+        // Set the animation times
+        player.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
+    }
 
     public void message(ServerPlayer player, String message) {
         player.sendSystemMessage(
@@ -59,6 +69,7 @@ public class MobSpawnHandler {
 
                 message(player, currentWave.size() + " Mobs are still alive!");
                 message(player, "The night starts, the mobs are incoming! ");
+                sendTitleMessage(player, "The night starts, The mobs are incoming", 5, 40, 10);
                 sound(player, world);
 
             } else if (currentWave.isEmpty()) {
@@ -99,11 +110,15 @@ public class MobSpawnHandler {
     }
 
     public void end(ServerLevel world) {
-        PortalSpawnHandler.recreatePortal(world);
-        currentWaveMobsPerPlayer.clear();
-        Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
-        for (ServerPlayer player : players) {
-            message(player, "End Weave!");
+        if (world != null) {
+            PortalSpawnHandler.recreatePortal(world);
+            if (currentWaveMobsPerPlayer != null) {
+                currentWaveMobsPerPlayer.clear();
+                Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
+                for (ServerPlayer player : players) {
+                    message(player, "End Weave!");
+                }
+            }
         }
     }
 

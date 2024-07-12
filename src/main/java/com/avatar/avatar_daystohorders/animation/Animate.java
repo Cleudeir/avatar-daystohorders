@@ -1,4 +1,4 @@
-package com.avatar.avatar_7dayshorders.animation;
+package com.avatar.avatar_daystohorders.animation;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;

@@ -1,7 +1,7 @@
-package com.avatar.avatar_7dayshorders;
+package com.avatar.avatar_daystohorders;
 
-import com.avatar.avatar_7dayshorders.server.Events;
-import com.avatar.avatar_7dayshorders.server.ServerConfig;
+import com.avatar.avatar_daystohorders.server.Events;
+import com.avatar.avatar_daystohorders.server.ServerConfig;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -11,7 +11,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(Main.MODID)
 public class Main {
-    public static final String MODID = "avatar_7dayshorders";
+    public static final String MODID = "avatar_daystohorders";
 
     public Main() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);

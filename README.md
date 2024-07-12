@@ -1,4 +1,4 @@
-# avatar_7dayshorders
+# avatar_daystohorders
 
 # dependence
 
@@ -12,7 +12,7 @@ java 17
 
 ./gradlew :runClient
 
-# avatar_7dayshorders
+# avatar_daystohorders
 
 # build
 

@@ -1,10 +1,10 @@
-package com.avatar.avatar_7dayshorders;
+package com.avatar.avatar_daystohorders;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.avatar.avatar_7dayshorders.object.MobWeaveDescripton;
+import com.avatar.avatar_daystohorders.object.MobWeaveDescripton;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -34,7 +34,7 @@ public class GlobalConfig {
         BUILDER.comment("Period Weave").push("periodWeave");
         PERIOD_WEAVE = BUILDER
                 .comment("Default period weave")
-                .define("default", "7");
+                .define("default", "4");
         BUILDER.pop();
 
         BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");

@@ -1,9 +1,9 @@
-package com.avatar.avatar_7dayshorders.function;
+package com.avatar.avatar_daystohorders.function;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.avatar.avatar_7dayshorders.server.ServerConfig;
+import com.avatar.avatar_daystohorders.server.ServerConfig;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

@@ -1,4 +1,4 @@
-package com.avatar.avatar_7dayshorders.server;
+package com.avatar.avatar_daystohorders.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,34 +85,42 @@ public class ServerConfig {
         return currentWaveMobsPerPlayer;
     }
 
-    public static List<String> serializeBlockPosMap(Map<BlockPos, BlockState> list) {
-        List<String> ListBlockPos = new ArrayList<>();
-        for (Map.Entry<BlockPos, BlockState> entry : list.entrySet()) {
+    public static List<String> serializeBlockPosMap(Map<BlockPos, BlockState> map) {
+        List<String> listBlockPos = new ArrayList<>();
+        for (Map.Entry<BlockPos, BlockState> entry : map.entrySet()) {
             BlockPos blockPos = entry.getKey();
             BlockState state = entry.getValue();
-            MutableComponent blockName = state.getBlock().getName();
-            String stringBlockPos = blockPos.getX() + "," + blockPos.getY() + "," + blockPos.getZ() + ":"
-                    + blockName;
-            ListBlockPos.add(stringBlockPos);
+            String blockName = ForgeRegistries.BLOCKS.getKey(state.getBlock()).toString();
+            String stringBlockPos = blockPos.getX() + "," + blockPos.getY() + "," + blockPos.getZ() + "," + blockName;
+            listBlockPos.add(stringBlockPos);
         }
-        return ListBlockPos;
+        return listBlockPos;
     }
 
-    private static Map<BlockPos, BlockState> deserializeBlockPosMap(List<String> MapBlockPos) {
+    private static Map<BlockPos, BlockState> deserializeBlockPosMap(List<String> mapBlockPos) {
         Map<BlockPos, BlockState> map = new HashMap<>();
-        for (String entry : MapBlockPos) {
-            String[] split = entry.split(",");
-            int x = Integer.parseInt(split[0]);
-            int y = Integer.parseInt(split[1]);
-            int z = Integer.parseInt(split[2]);
-            String blockName = split[3];
-            @Nullable
-            BlockState blockState = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName))
-                    .defaultBlockState();
+        for (String entry : mapBlockPos) {
+            try {
+                String[] split = entry.split(",");
+                int x = Integer.parseInt(split[0]);
+                int y = Integer.parseInt(split[1]);
+                int z = Integer.parseInt(split[2]);
+                String blockName = split[3];
 
-            System.out.println(blockState);
-            BlockPos blockPos = new BlockPos(x, y, z);
-            map.put(blockPos, blockState);
+                @Nullable
+                BlockState blockState = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName))
+                        .defaultBlockState();
+                if (blockState == null) {
+                    throw new IllegalArgumentException("Invalid block name: " + blockName);
+                }
+
+                System.out.println(blockState);
+                BlockPos blockPos = new BlockPos(x, y, z);
+                map.put(blockPos, blockState);
+            } catch (Exception e) {
+                System.err.println("Error processing entry: " + entry);
+                e.printStackTrace();
+            }
         }
         return map;
     }

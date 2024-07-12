@@ -1,4 +1,4 @@
-package com.avatar.avatar_7dayshorders.function;
+package com.avatar.avatar_daystohorders.function;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
