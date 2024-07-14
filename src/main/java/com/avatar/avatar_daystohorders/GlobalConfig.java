@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.avatar.avatar_daystohorders.object.MobWeaveDescripton;
+import com.avatar.avatar_daystohorders.object.MobWaveDescripton;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -15,9 +15,9 @@ public class GlobalConfig {
     public static ForgeConfigSpec CONFIG;
 
     // Define your config values here
-    public static ForgeConfigSpec.ConfigValue<List<String>> LIST_MOBS_PER_WEAVE;
+    public static ForgeConfigSpec.ConfigValue<List<String>> LIST_MOBS_PER_WAVE;
     public static ForgeConfigSpec.ConfigValue<String> MAX_MOBS_PER_PLAYER;
-    public static ForgeConfigSpec.ConfigValue<String> PERIOD_WEAVE;
+    public static ForgeConfigSpec.ConfigValue<String> PERIOD_WAVE;
 
     // Initialize config values without static initializer block
     static {
@@ -31,15 +31,15 @@ public class GlobalConfig {
                 .define("default", "15");
         BUILDER.pop();
 
-        BUILDER.comment("Period Weave").push("periodWeave");
-        PERIOD_WEAVE = BUILDER
-                .comment("Default period weave")
+        BUILDER.comment("Period wave").push("periodWave");
+        PERIOD_WAVE = BUILDER
+                .comment("Default period wave")
                 .define("default", "4");
         BUILDER.pop();
 
-        BUILDER.comment("Mobs Per Weave").push("mobsPerWeave");
-        LIST_MOBS_PER_WEAVE = BUILDER.comment(
-                "Default mobs per weave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,startWeave,endWeave,endWeave,weightOfMob\"\n if endWeave = 0 = infinity\n Quantity mob type per weave per player:\n A= Max mobs\nB= Weight of mob\n C= Sum of all Weight mobs this weave\n Calc: A * B / C")
+        BUILDER.comment("Mobs Per wave").push("mobsPerWave");
+        LIST_MOBS_PER_WAVE = BUILDER.comment(
+                "Default mobs per wave table data, example: \"minecraft:zombie,1,0,0\" = \"mobName,startWave,endWave,endWave,weightOfMob\"\n if endWave = 0 = infinity\n Quantity mob type per wave per player:\n A= Max mobs\nB= Weight of mob\n C= Sum of all Weight mobs this wave\n Calc: A * B / C")
                 .define("default", new ArrayList<String>());
 
         BUILDER.pop();
@@ -51,10 +51,10 @@ public class GlobalConfig {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG);
     }
 
-    public static int loadPeriodWeave() {
+    public static int loadPeriodwave() {
         int data = 7;
         if (CONFIG.isLoaded()) {
-            int remember = Integer.valueOf(PERIOD_WEAVE.get());
+            int remember = Integer.valueOf(PERIOD_WAVE.get());
             data = remember;
         }
         return data;
@@ -69,39 +69,39 @@ public class GlobalConfig {
         return data;
     }
 
-    public static List<String> serializeMobsList(List<MobWeaveDescripton> list) {
+    public static List<String> serializeMobsList(List<MobWaveDescripton> list) {
         List<String> ListSerialized = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            MobWeaveDescripton mobsInfo = list.get(i);
+            MobWaveDescripton mobsInfo = list.get(i);
             String serialized = mobsInfo.getMobName()
-                    + "," + mobsInfo.getStartWeave()
-                    + "," + mobsInfo.getEndWeave()
+                    + "," + mobsInfo.getStartwave()
+                    + "," + mobsInfo.getEndwave()
                     + "," + mobsInfo.getQuantity();
             ListSerialized.add(serialized);
         }
         return ListSerialized;
     }
 
-    public static List<MobWeaveDescripton> deserializeMobsList(List<String> ListSerialized) {
-        List<MobWeaveDescripton> list = new ArrayList<>();
+    public static List<MobWaveDescripton> deserializeMobsList(List<String> ListSerialized) {
+        List<MobWaveDescripton> list = new ArrayList<>();
         for (String entry : ListSerialized) {
             String[] split = entry.split(",");
             String mobName = split[0];
-            int startWeave = Integer.parseInt(split[1]);
-            int endWeave = Integer.parseInt(split[2]);
+            int startWave = Integer.parseInt(split[1]);
+            int endWave = Integer.parseInt(split[2]);
             int quantity = Integer.parseInt(split[3]);
-            MobWeaveDescripton mobsInfo = new MobWeaveDescripton(mobName, quantity, startWeave, endWeave);
+            MobWaveDescripton mobsInfo = new MobWaveDescripton(mobName, quantity, startWave, endWave);
             list.add(mobsInfo);
         }
         return list;
     }
 
-    public static List<MobWeaveDescripton> getListMobs(Integer weaveNumber) {
-        List<MobWeaveDescripton> data = new ArrayList<>();
+    public static List<MobWaveDescripton> getListMobs(Integer waveNumber) {
+        List<MobWaveDescripton> data = new ArrayList<>();
         if (CONFIG.isLoaded()) {
-            data = deserializeMobsList(LIST_MOBS_PER_WEAVE.get());
+            data = deserializeMobsList(LIST_MOBS_PER_WAVE.get());
             if (data.isEmpty()) {
-                ArrayList<String> defaultMobsPerWeave = new ArrayList<String>() {
+                ArrayList<String> defaultMobsPerWave = new ArrayList<String>() {
                     {
                         add("minecraft:zombie,1,0,10");
                         add("minecraft:skeleton,2,0,4");
@@ -130,12 +130,12 @@ public class GlobalConfig {
                         add("minecraft:elder_guardian,25,0,1");
                     };
                 };
-                LIST_MOBS_PER_WEAVE.set(defaultMobsPerWeave);
+                LIST_MOBS_PER_WAVE.set(defaultMobsPerWave);
                 CONFIG.save();
             }
             data = data.stream()
-                    .filter(x -> x.getStartWeave() <= weaveNumber
-                            && (x.getEndWeave() >= weaveNumber || x.getEndWeave() == 0))
+                    .filter(x -> x.getStartwave() <= waveNumber
+                            && (x.getEndwave() >= waveNumber || x.getEndwave() == 0))
                     .collect(Collectors.toList());
             System.out.println("Data loaded from config");
         }

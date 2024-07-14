@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 import com.avatar.avatar_daystohorders.GlobalConfig;
 import com.avatar.avatar_daystohorders.Main;
 import com.avatar.avatar_daystohorders.animation.Animate;
-import com.avatar.avatar_daystohorders.object.MobWeaveDescripton;
+import com.avatar.avatar_daystohorders.object.MobWaveDescripton;
 import com.avatar.avatar_daystohorders.server.ServerConfig;
 
 import net.minecraft.network.chat.Component;
@@ -49,11 +49,11 @@ public class MobSpawnHandler {
                 SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
-    public void start(ServerLevel world, Integer weaverNumber) {
-        List<MobWeaveDescripton> weaverNumberListMobs = GlobalConfig.getListMobs(weaverNumber);
+    public int start(ServerLevel world, Integer waverNumber) {
+        List<MobWaveDescripton> waverNumberListMobs = GlobalConfig.getListMobs(waverNumber);
         int totalMobs = 0;
         int maxMobs = GlobalConfig.loadMaxMobsPerPlayer();
-        for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
+        for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
             totalMobs += mobsInfo.getQuantity();
         }
         Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
@@ -67,9 +67,7 @@ public class MobSpawnHandler {
                 currentWave = ServerConfig.loadPlayerMobs(playerName);
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
 
-                message(player, currentWave.size() + " Mobs are still alive!");
-                message(player, "The night starts, the mobs are incoming! ");
-                sendTitleMessage(player, "The night starts, The mobs are incoming", 5, 40, 10);
+                sendTitleMessage(player, "The night starts", 5, 40, 10);
                 sound(player, world);
 
             } else if (currentWave.isEmpty()) {
@@ -83,9 +81,9 @@ public class MobSpawnHandler {
                 PortalSpawnHandler.createPortal(world, player, distant, index);
 
                 message(player, currentWave.size() + " Mobs are still alive!");
-                message(player, "Start new Weave!");
+                message(player, "Start new wave!");
 
-                for (MobWeaveDescripton mobsInfo : weaverNumberListMobs) {
+                for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
                     int quantityWeight = (int) Math.floor(maxMobs * mobsInfo.getQuantity() / totalMobs);
                     if (quantityWeight == 0) {
                         quantityWeight = 1;
@@ -97,16 +95,13 @@ public class MobSpawnHandler {
                             quantityWeight, distant, index);
                     currentWave.addAll(create);
                 }
-
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
-
             } else {
-
-                mobCheck(player, world, currentWave);
                 message(player, currentWave.size() + " Mobs are still alive!");
-
+                return mobCheck(player, world, currentWave);
             }
         }
+        return 8;
     }
 
     public void end(ServerLevel world) {
@@ -116,13 +111,13 @@ public class MobSpawnHandler {
                 currentWaveMobsPerPlayer.clear();
                 Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
                 for (ServerPlayer player : players) {
-                    message(player, "End Weave!");
+                    message(player, "End wave!");
                 }
             }
         }
     }
 
-    private static void mobCheck(Player player, ServerLevel world, List<UUID> currentWave) {
+    private static int mobCheck(Player player, ServerLevel world, List<UUID> currentWave) {
         if (currentWave.size() > 0 && world != null) {
             for (int i = 0; i < currentWave.size(); i++) {
                 UUID mobId = currentWave.get(i);
@@ -138,9 +133,13 @@ public class MobSpawnHandler {
                 } else {
                     currentWave.remove(mobId);
                     currentWaveMobsPerPlayer.put(player.getName().getString(), currentWave);
+                    if (currentWave.isEmpty()) {
+                        return 60;
+                    }
                 }
             }
         }
+        return 8;
     }
 
     public static void removeMob(UUID mobId, ServerLevel world) {
