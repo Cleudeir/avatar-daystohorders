@@ -7,11 +7,13 @@ import com.avatar.avatar_daystohorders.GlobalConfig;
 import com.avatar.avatar_daystohorders.Main;
 import com.avatar.avatar_daystohorders.function.MobSpawnHandler;
 import com.avatar.avatar_daystohorders.function.PortalSpawnHandler;
+import com.avatar.avatar_daystohorders.function.StatusBarRenderer;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -26,7 +28,6 @@ public class Events {
     private static int periodWave = 0;
     private static MobSpawnHandler mobSpawnHandler = new MobSpawnHandler();
     private static boolean endState = false;
-    private static int timeWeave = 8;
 
     public static boolean checkPeriod(double seconds) {
         double divisor = (double) (seconds * 20);
@@ -49,16 +50,16 @@ public class Events {
                 currentTime = time;
                 int day = (int) (time / 24000) + 1;
                 int waveNumber = periodWave == 0 ? 0 : (int) day / periodWave;
-                if (checkPeriod(timeWeave) && day > 0 && day % periodWave == 0 && isNight) {
-                    System.out.println("timeWave " + timeWeave);
-                    timeWeave = mobSpawnHandler.start(world, waveNumber);
+                if (checkPeriod(5) && day > 0 && day % periodWave == 0 && isNight) {
+                    mobSpawnHandler.startWave(world, waveNumber);
                     endState = true;
                 } else if (checkPeriod(15) && endState && !isNight) {
                     mobSpawnHandler.end(world);
                     mobSpawnHandler.save();
                     endState = false;
                 }
-                if (timeDay == 0) {
+
+                if (timeDay == 12500) {
                     Collection<ServerPlayer> players = world.getPlayers((Predicate<? super ServerPlayer>) p -> true);
                     for (ServerPlayer player : players) {
                         int timeToWave = periodWave - (day % periodWave);
@@ -68,9 +69,8 @@ public class Events {
                         } else {
                             text = timeToWave + 1 + " Day to wave!";
                         }
-                        MobSpawnHandler.sendTitleMessage(player, text, 70, 5,
+                        MobSpawnHandler.sendTitleMessage(player, text, 70, 7,
                                 30);
-
                     }
                 }
             }

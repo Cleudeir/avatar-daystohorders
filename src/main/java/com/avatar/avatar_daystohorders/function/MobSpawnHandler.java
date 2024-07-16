@@ -23,7 +23,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Main.MODID)
@@ -49,59 +48,87 @@ public class MobSpawnHandler {
                 SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
-    public int start(ServerLevel world, Integer waverNumber) {
+    public void startWave(ServerLevel world, Integer waverNumber) {
+        Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
         List<MobWaveDescripton> waverNumberListMobs = GlobalConfig.getListMobs(waverNumber);
         int totalMobs = 0;
         int maxMobs = GlobalConfig.loadMaxMobsPerPlayer();
+        StatusBarRenderer.setMobsMax(maxMobs);
         for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
             totalMobs += mobsInfo.getQuantity();
         }
-        Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
         for (ServerPlayer player : players) {
-
             String playerName = player.getName().getString();
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
-
             if (currentWave == null) {
-
                 currentWave = ServerConfig.loadPlayerMobs(playerName);
                 currentWaveMobsPerPlayer.put(playerName, currentWave);
-
                 sendTitleMessage(player, "The night starts", 5, 40, 10);
                 sound(player, world);
-
             } else if (currentWave.isEmpty()) {
-
-                int distant = 15 + world.random.nextInt(15);
-                // distant = 0;
-                int index = 6;
-
-                sound(player, world);
-                PortalSpawnHandler.recreatePortal(world);
-                PortalSpawnHandler.createPortal(world, player, distant, index);
-
-                message(player, currentWave.size() + " Mobs are still alive!");
-                message(player, "Start new wave!");
-
-                for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
-                    int quantityWeight = (int) Math.floor(maxMobs * mobsInfo.getQuantity() / totalMobs);
-                    if (quantityWeight == 0) {
-                        quantityWeight = 1;
-                    }
-                    message(player,
-                            mobsInfo.getMobName() + " qnt: " + mobsInfo.getQuantity() + " weight:" + quantityWeight);
-
-                    List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
-                            quantityWeight, distant, index);
-                    currentWave.addAll(create);
-                }
-                currentWaveMobsPerPlayer.put(playerName, currentWave);
-            } else {
-                message(player, currentWave.size() + " Mobs are still alive!");
-                return mobCheck(player, world, currentWave);
+                createWave(player, world, waverNumber, waverNumberListMobs, totalMobs, maxMobs);
+            } else if (currentWave.size() > 0) {
+                waveMobCheck(player, world, waverNumber, maxMobs);
             }
         }
-        return 8;
+    }
+
+    public void createWave(ServerPlayer player,
+            ServerLevel world, Integer waverNumber,
+            List<MobWaveDescripton> waverNumberListMobs,
+            int totalMobs, int maxMobs) {
+
+        String playerName = player.getName().getString();
+        List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
+        if (currentWave.isEmpty()) {
+
+            int distant = 15 + world.random.nextInt(15);
+            int index = 6;
+
+            sound(player, world);
+            PortalSpawnHandler.recreatePortal(world);
+            PortalSpawnHandler.createPortal(world, player, distant, index);
+            message(player, "Start new wave!");
+
+            for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
+                int quantityWeight = (int) Math.floor(maxMobs * mobsInfo.getQuantity() / totalMobs);
+                if (quantityWeight == 0) {
+                    quantityWeight = 1;
+                }
+                message(player,
+                        mobsInfo.getMobName() + " qnt: " + mobsInfo.getQuantity() + " weight:" + quantityWeight);
+
+                List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
+                        quantityWeight, distant, index);
+                currentWave.addAll(create);
+            }
+            StatusBarRenderer.setMobsLives(currentWave.size());
+            currentWaveMobsPerPlayer.put(playerName, currentWave);
+        }
+
+    }
+
+    public void waveMobCheck(ServerPlayer player, ServerLevel world, Integer waverNumber, int maxMobs) {
+        String playerName = player.getName().getString();
+        List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
+
+        StatusBarRenderer.setMobsLives(currentWave.size());
+        for (int i = 0; i < currentWave.size(); i++) {
+            UUID mobId = currentWave.get(i);
+            Mob mob = (Mob) world.getEntity(mobId);
+            if (mob != null) {
+                Boolean mobIsAlive = mob.isAlive();
+                if (mobIsAlive && mob.getTarget() == null) {
+                    mob.setTarget(player);
+                    mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
+                }
+                Animate.portal(world, mob.getX(), mob.getY(), mob.getZ());
+                MobTeleport.mobTeleport(mob, world, player);
+            } else {
+                currentWave.remove(mobId);
+                currentWaveMobsPerPlayer.put(player.getName().getString(), currentWave);
+            }
+        }
     }
 
     public void end(ServerLevel world) {
@@ -115,31 +142,6 @@ public class MobSpawnHandler {
                 }
             }
         }
-    }
-
-    private static int mobCheck(Player player, ServerLevel world, List<UUID> currentWave) {
-        if (currentWave.size() > 0 && world != null) {
-            for (int i = 0; i < currentWave.size(); i++) {
-                UUID mobId = currentWave.get(i);
-                Mob mob = (Mob) world.getEntity(mobId);
-                if (mob != null) {
-                    Boolean mobIsAlive = mob.isAlive();
-                    if (mobIsAlive && mob.getTarget() == null) {
-                        mob.setTarget(player);
-                        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
-                    }
-                    Animate.portal(world, mob.getX(), mob.getY(), mob.getZ());
-                    MobTeleport.mobTeleport(mob, world, player);
-                } else {
-                    currentWave.remove(mobId);
-                    currentWaveMobsPerPlayer.put(player.getName().getString(), currentWave);
-                    if (currentWave.isEmpty()) {
-                        return 60;
-                    }
-                }
-            }
-        }
-        return 8;
     }
 
     public static void removeMob(UUID mobId, ServerLevel world) {
