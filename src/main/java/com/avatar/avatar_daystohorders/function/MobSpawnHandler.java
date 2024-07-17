@@ -67,11 +67,11 @@ public class MobSpawnHandler {
         List<MobWaveDescripton> waverNumberListMobs = GlobalConfig.getListMobs(waverNumber);
         int totalMobs = 0;
         int maxMobs = GlobalConfig.loadMaxMobsPerPlayer();
-        StatusBarRenderer.setMobsMax(maxMobs - 1);
         for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
             totalMobs += mobsInfo.getQuantity();
         }
         for (ServerPlayer player : players) {
+            StatusBarRenderer.updatePlayerStatus(player.getUUID(), 0, maxMobs - 1);
             String playerName = player.getName().getString();
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
             if (currentWave == null) {
@@ -80,9 +80,10 @@ public class MobSpawnHandler {
                     sendTitleMessage(player, "The night starts", 5, 40, 10);
                     createWave(player, world, waverNumber, waverNumberListMobs, totalMobs, maxMobs);
                 } else {
-                    StatusBarRenderer.setMobsLives(currentWave.size());
                     currentWaveMobsPerPlayer.put(playerName, currentWave);
+                    StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
                 }
+
                 sound(player, world, "bell_resonate");
             } else if (currentWave.isEmpty()) {
                 createWave(player, world, waverNumber, waverNumberListMobs, totalMobs, maxMobs);
@@ -100,7 +101,7 @@ public class MobSpawnHandler {
 
         List<UUID> currentWave = new ArrayList<>();
 
-        int distant = 15 + world.random.nextInt(15);
+        int distant = 10 + world.random.nextInt(10);
         int index = 6;
 
         sound(player, world, "bell_resonate");
@@ -117,7 +118,8 @@ public class MobSpawnHandler {
                     quantityWeight, distant, index);
             currentWave.addAll(create);
         }
-        StatusBarRenderer.setMobsLives(currentWave.size());
+        StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
+
         String playerName = player.getName().getString();
         currentWaveMobsPerPlayer.put(playerName, currentWave);
 
@@ -126,8 +128,8 @@ public class MobSpawnHandler {
     public void waveMobCheck(ServerPlayer player, ServerLevel world, Integer waverNumber, int maxMobs) {
         String playerName = player.getName().getString();
         List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
-
-        StatusBarRenderer.setMobsLives(currentWave.size());
+        message(player, currentWave.size() + " mobs");
+        StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
         for (int i = 0; i < currentWave.size(); i++) {
             UUID mobId = currentWave.get(i);
             Mob mob = (Mob) world.getEntity(mobId);
@@ -147,13 +149,13 @@ public class MobSpawnHandler {
     }
 
     public void end(ServerLevel world) {
-        StatusBarRenderer.setMobsLives(0);
         if (world != null) {
             PortalSpawnHandler.recreatePortal(world);
             if (currentWaveMobsPerPlayer != null) {
                 currentWaveMobsPerPlayer.clear();
                 Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
                 for (ServerPlayer player : players) {
+                    StatusBarRenderer.updatePlayerStatus(player.getUUID(), 0, 0);
                     sendTitleMessage(player, "The night ends", 5, 40, 10);
                     sound(player, world, "entity_creeper_hurt");
                 }

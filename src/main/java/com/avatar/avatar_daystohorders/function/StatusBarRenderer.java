@@ -9,40 +9,39 @@ import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 @Mod.EventBusSubscriber(modid = Main.MODID, value = Dist.CLIENT)
 public class StatusBarRenderer {
 
-    private static int mobsMax = 0;
-    private static int mobsLives = 0;
-    private static int[] filledBarData = new int[mobsMax];
+    private static final Map<UUID, PlayerStatus> playerStatusMap = new HashMap<>();
 
-    public static void setMobsMax(int max) {
-        mobsMax = max;
-        filledBarData = new int[max];
-    }
-
-    public static void setMobsLives(int lives) {
-        mobsLives = Math.min(lives, mobsMax);
+    public static void updatePlayerStatus(UUID playerUUID, int mobsMax, int mobsLives) {
+        PlayerStatus status = playerStatusMap.getOrDefault(playerUUID, new PlayerStatus());
+        status.mobsMax = mobsMax;
+        status.mobsLives = mobsLives;
+        status.filledBarData = new int[mobsMax];
         for (int i = 0; i < mobsMax; i++) {
-            filledBarData[i] = (i < mobsLives) ? (200 / mobsMax) : 0;
+            status.filledBarData[i] = (i < mobsLives) ? (200 / mobsMax) : 0;
         }
+        playerStatusMap.put(playerUUID, status);
     }
 
     @SubscribeEvent
     public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Pre event) {
-        if (mobsLives > 0 && !event.isCanceled()) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.level != null) {
-                renderStatusBar(mc.player, event.getGuiGraphics());
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player != null && playerStatusMap.containsKey(player.getUUID()) && !event.isCanceled()) {
+            PlayerStatus status = playerStatusMap.get(player.getUUID());
+            if (status != null && status.mobsLives > 0) {
+                renderStatusBar(player, event.getGuiGraphics(), status);
             }
         }
     }
 
-    public static void renderStatusBar(Player player, GuiGraphics guiGraphics) {
-        if (player == null || filledBarData == null) {
-            return;
-        }
-
+    private static void renderStatusBar(Player player, GuiGraphics guiGraphics, PlayerStatus status) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
             return;
@@ -54,22 +53,26 @@ public class StatusBarRenderer {
         int barWidth = 120;
         int barHeight = 3;
         int barX = 5;
-        int barY = 13; // Adjusted to leave space for the text
+        int barY = 13;
 
-        // Draw Background Bar
         guiGraphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFFFFFFFF);
 
-        // Draw Filled Bar
-        for (int i = 0; i < mobsLives; i++) {
-            int filledWidth = filledBarData[i];
-            guiGraphics.fill(barX + (i * (barWidth / mobsMax)), barY, barX + (i * (barWidth / mobsMax)) + filledWidth,
+        for (int i = 0; i < status.mobsLives; i++) {
+            int filledWidth = status.filledBarData[i];
+            guiGraphics.fill(barX + (i * (barWidth / status.mobsMax)), barY,
+                    barX + (i * (barWidth / status.mobsMax)) + filledWidth,
                     barY + barHeight, 0xFFFF0000);
         }
 
-        // Draw Text
-        String text = "Wave mobs lives: " + mobsLives + "/" + mobsMax;
+        String text = "Wave mobs lives: " + status.mobsLives + "/" + status.mobsMax;
         int textX = barX + (barWidth - mc.font.width(text)) / 2;
-        int textY = barY - 10; // Positioning the text above the bar
-        guiGraphics.drawString(mc.font, text, textX, textY, 0xFFFFFFFF); // White color for the text
+        int textY = barY - 10;
+        guiGraphics.drawString(mc.font, text, textX, textY, 0xFFFFFFFF);
+    }
+
+    private static class PlayerStatus {
+        int mobsMax = 0;
+        int mobsLives = 0;
+        int[] filledBarData = new int[mobsMax];
     }
 }
