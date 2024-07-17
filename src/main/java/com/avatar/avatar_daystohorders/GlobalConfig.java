@@ -28,7 +28,7 @@ public class GlobalConfig {
         BUILDER.comment("Max mobs per player").push("maxMobsPerPlayer");
         MAX_MOBS_PER_PLAYER = BUILDER
                 .comment("Max mobs per player")
-                .define("default", "15");
+                .define("default", "10");
         BUILDER.pop();
 
         BUILDER.comment("Period wave").push("periodWave");

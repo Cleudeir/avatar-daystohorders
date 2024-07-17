@@ -144,7 +144,7 @@ public class ServerConfig {
         Map<String, List<UUID>> data = new HashMap<>();
         if (CONFIG.isLoaded()) {
             data = deserializeCurrentWaveMobsPerPlayer(CURRENT_WAVE_MOBS_PER_PLAYER.get());
-            System.out.println("Data loaded from config");
+            System.out.println("Data loaded loadPlayerMobs from config");
         }
         if (!data.containsKey(PlayerName)) {
             return new ArrayList<>();
@@ -154,13 +154,13 @@ public class ServerConfig {
 
     public static Map<BlockPos, BlockState> loadPortalBlocks() {
         // Load the config if not already loaded
-        Map<BlockPos, BlockState> portalBlocks = new HashMap<>();
+        Map<BlockPos, BlockState> data = new HashMap<>();
         if (CONFIG.isLoaded()) {
             // Retrieve data from config
-            portalBlocks = deserializeBlockPosMap(PORTAL_BLOCKS.get());
-            System.out.println("Data loaded from config");
+            data = deserializeBlockPosMap(PORTAL_BLOCKS.get());
+            System.out.println("Data loaded loadPortalBlocks from config");
         }
-        return portalBlocks;
+        return data;
     }
 
 }

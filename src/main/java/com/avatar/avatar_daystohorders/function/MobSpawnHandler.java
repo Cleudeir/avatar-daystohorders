@@ -1,5 +1,6 @@
 package com.avatar.avatar_daystohorders.function;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -43,9 +45,21 @@ public class MobSpawnHandler {
                 Component.translatable(message));
     }
 
-    public void sound(ServerPlayer player, ServerLevel world) {
-        world.playSound(null, player.blockPosition(), SoundEvents.BELL_RESONATE,
-                SoundSource.HOSTILE, 1.0F, 1.0F);
+    public void sound(ServerPlayer player, ServerLevel world, String effect) {
+        SoundEvent soundEvent;
+        switch (effect.toLowerCase()) {
+            case "bell_resonate":
+                soundEvent = SoundEvents.BELL_RESONATE;
+                break;
+            case "entity_creeper_hurt":
+                soundEvent = SoundEvents.CREEPER_HURT;
+                break;
+
+            default:
+                soundEvent = SoundEvents.BELL_RESONATE;
+                break;
+        }
+        world.playSound(null, player.blockPosition(), soundEvent, SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
     public void startWave(ServerLevel world, Integer waverNumber) {
@@ -53,7 +67,7 @@ public class MobSpawnHandler {
         List<MobWaveDescripton> waverNumberListMobs = GlobalConfig.getListMobs(waverNumber);
         int totalMobs = 0;
         int maxMobs = GlobalConfig.loadMaxMobsPerPlayer();
-        StatusBarRenderer.setMobsMax(maxMobs);
+        StatusBarRenderer.setMobsMax(maxMobs - 1);
         for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
             totalMobs += mobsInfo.getQuantity();
         }
@@ -62,12 +76,18 @@ public class MobSpawnHandler {
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
             if (currentWave == null) {
                 currentWave = ServerConfig.loadPlayerMobs(playerName);
-                currentWaveMobsPerPlayer.put(playerName, currentWave);
-                sendTitleMessage(player, "The night starts", 5, 40, 10);
-                sound(player, world);
+                if (currentWave == null || currentWave.isEmpty()) {
+                    sendTitleMessage(player, "The night starts", 5, 40, 10);
+                    createWave(player, world, waverNumber, waverNumberListMobs, totalMobs, maxMobs);
+                } else {
+                    StatusBarRenderer.setMobsLives(currentWave.size());
+                    currentWaveMobsPerPlayer.put(playerName, currentWave);
+                }
+                sound(player, world, "bell_resonate");
             } else if (currentWave.isEmpty()) {
                 createWave(player, world, waverNumber, waverNumberListMobs, totalMobs, maxMobs);
-            } else if (currentWave.size() > 0) {
+                sound(player, world, "bell_resonate");
+            } else {
                 waveMobCheck(player, world, waverNumber, maxMobs);
             }
         }
@@ -78,33 +98,28 @@ public class MobSpawnHandler {
             List<MobWaveDescripton> waverNumberListMobs,
             int totalMobs, int maxMobs) {
 
-        String playerName = player.getName().getString();
-        List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
-        if (currentWave.isEmpty()) {
+        List<UUID> currentWave = new ArrayList<>();
 
-            int distant = 15 + world.random.nextInt(15);
-            int index = 6;
+        int distant = 15 + world.random.nextInt(15);
+        int index = 6;
 
-            sound(player, world);
-            PortalSpawnHandler.recreatePortal(world);
-            PortalSpawnHandler.createPortal(world, player, distant, index);
-            message(player, "Start new wave!");
+        sound(player, world, "bell_resonate");
+        PortalSpawnHandler.recreatePortal(world);
+        PortalSpawnHandler.createPortal(world, player, distant, index);
 
-            for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
-                int quantityWeight = (int) Math.floor(maxMobs * mobsInfo.getQuantity() / totalMobs);
-                if (quantityWeight == 0) {
-                    quantityWeight = 1;
-                }
-                message(player,
-                        mobsInfo.getMobName() + " qnt: " + mobsInfo.getQuantity() + " weight:" + quantityWeight);
-
-                List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
-                        quantityWeight, distant, index);
-                currentWave.addAll(create);
+        for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
+            int quantityWeight = (int) Math.floor(maxMobs * mobsInfo.getQuantity() / totalMobs);
+            if (quantityWeight == 0) {
+                quantityWeight = 1;
             }
-            StatusBarRenderer.setMobsLives(currentWave.size());
-            currentWaveMobsPerPlayer.put(playerName, currentWave);
+
+            List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
+                    quantityWeight, distant, index);
+            currentWave.addAll(create);
         }
+        StatusBarRenderer.setMobsLives(currentWave.size());
+        String playerName = player.getName().getString();
+        currentWaveMobsPerPlayer.put(playerName, currentWave);
 
     }
 
@@ -132,13 +147,15 @@ public class MobSpawnHandler {
     }
 
     public void end(ServerLevel world) {
+        StatusBarRenderer.setMobsLives(0);
         if (world != null) {
             PortalSpawnHandler.recreatePortal(world);
             if (currentWaveMobsPerPlayer != null) {
                 currentWaveMobsPerPlayer.clear();
                 Collection<ServerPlayer> players = world.getPlayers((Predicate<ServerPlayer>) p -> true);
                 for (ServerPlayer player : players) {
-                    message(player, "End wave!");
+                    sendTitleMessage(player, "The night ends", 5, 40, 10);
+                    sound(player, world, "entity_creeper_hurt");
                 }
             }
         }

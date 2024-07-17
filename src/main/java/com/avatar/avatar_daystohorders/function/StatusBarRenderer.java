@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = Main.MODID, value = Dist.CLIENT)
 public class StatusBarRenderer {
 
-    private static int mobsMax = 20;
+    private static int mobsMax = 0;
     private static int mobsLives = 0;
     private static int[] filledBarData = new int[mobsMax];
 
@@ -53,8 +53,8 @@ public class StatusBarRenderer {
 
         int barWidth = 120;
         int barHeight = 3;
-        int barX = (screenWidth - barWidth) / 2;
-        int barY = 20; // Adjusted to leave space for the text
+        int barX = 5;
+        int barY = 13; // Adjusted to leave space for the text
 
         // Draw Background Bar
         guiGraphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFFFFFFFF);
@@ -69,7 +69,7 @@ public class StatusBarRenderer {
         // Draw Text
         String text = "Wave mobs lives: " + mobsLives + "/" + mobsMax;
         int textX = barX + (barWidth - mc.font.width(text)) / 2;
-        int textY = barY - 15; // Positioning the text above the bar
+        int textY = barY - 10; // Positioning the text above the bar
         guiGraphics.drawString(mc.font, text, textX, textY, 0xFFFFFFFF); // White color for the text
     }
 }
