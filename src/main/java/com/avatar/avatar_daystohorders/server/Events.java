@@ -49,7 +49,7 @@ public class Events {
                 currentTime = time;
                 int day = (int) (time / 24000) + 1;
                 int waveNumber = periodWave == 0 ? 0 : (int) day / periodWave;
-                if (checkPeriod(5) && day > 0 && day % periodWave == 0 && isNight) {
+                if (checkPeriod(10) && day > 0 && day % periodWave == 0 && isNight) {
                     mobSpawnHandler.startWave(world, waveNumber);
                     endState = true;
                 } else if (checkPeriod(15) && endState && !isNight) {

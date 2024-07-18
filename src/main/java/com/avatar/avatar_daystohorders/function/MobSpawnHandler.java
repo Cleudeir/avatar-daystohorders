@@ -130,6 +130,7 @@ public class MobSpawnHandler {
         List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
         message(player, currentWave.size() + " mobs");
         StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
+
         for (int i = 0; i < currentWave.size(); i++) {
             UUID mobId = currentWave.get(i);
             Mob mob = (Mob) world.getEntity(mobId);

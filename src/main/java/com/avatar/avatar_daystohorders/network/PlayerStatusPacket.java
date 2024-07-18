@@ -1,18 +1,17 @@
 package com.avatar.avatar_daystohorders.network;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
 import java.util.UUID;
 import java.util.function.Supplier;
 
 import com.avatar.avatar_daystohorders.function.StatusBarRenderer;
 
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
+
 public class PlayerStatusPacket {
     private final UUID playerUUID;
-    public int mobsMax;
-    public int mobsLives;
-    public int[] filledBarData;
+    public final int mobsMax;
+    public final int mobsLives;
 
     public PlayerStatusPacket(UUID playerUUID, int mobsMax, int mobsLives) {
         this.playerUUID = playerUUID;
@@ -32,10 +31,10 @@ public class PlayerStatusPacket {
         buf.writeInt(mobsLives);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
+    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             StatusBarRenderer.updatePlayerStatus(playerUUID, mobsMax, mobsLives);
         });
-        ctx.get().setPacketHandled(true);
+        return true;
     }
 }
