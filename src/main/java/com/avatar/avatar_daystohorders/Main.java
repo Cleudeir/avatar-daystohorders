@@ -1,6 +1,6 @@
 package com.avatar.avatar_daystohorders;
 
-import com.avatar.avatar_daystohorders.network.PlayerStatusPacket;
+import com.avatar.avatar_daystohorders.network.StatusUpdatePacket;
 import com.avatar.avatar_daystohorders.server.Events;
 import com.avatar.avatar_daystohorders.server.ServerConfig;
 
@@ -36,14 +36,12 @@ public class Main {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // Some preinit code
-        NETWORK_CHANNEL.registerMessage(0, PlayerStatusPacket.class, PlayerStatusPacket::toBytes,
-                PlayerStatusPacket::new, PlayerStatusPacket::handle);
+        NETWORK_CHANNEL.registerMessage(0, StatusUpdatePacket.class, StatusUpdatePacket::toBytes,
+                StatusUpdatePacket::new, StatusUpdatePacket::handle);
         System.out.println("Setup method called");
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
         System.out.println("Client setup method called");
-        // Some client setup code
     }
 }

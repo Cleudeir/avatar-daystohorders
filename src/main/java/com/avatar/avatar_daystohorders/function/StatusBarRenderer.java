@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.avatar.avatar_daystohorders.Main;
-import com.avatar.avatar_daystohorders.network.PlayerStatusPacket;
+import com.avatar.avatar_daystohorders.network.StatusUpdatePacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -23,36 +22,24 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 @Mod.EventBusSubscriber(modid = Main.MODID, value = Dist.CLIENT)
 public class StatusBarRenderer {
 
-    private static final Map<UUID, PlayerStatusPacket> playerStatusMap = new HashMap<>();
-    private static final int UPDATE_INTERVAL_TICKS = 20 * 10; // 1 second at 20 TPS
-    private static int tickCount = 0;
+    private static final Map<UUID, String> playerStatusMap = new HashMap<>();
 
     public static void updatePlayerStatus(UUID playerUUID, int mobsMax, int mobsLives) {
-        PlayerStatusPacket status = playerStatusMap.getOrDefault(playerUUID,
-                new PlayerStatusPacket(playerUUID, mobsMax, mobsLives));
+        String status = mobsLives + "," + mobsMax;
         playerStatusMap.put(playerUUID, status);
     }
 
-    @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            tickCount++;
-            if (tickCount >= UPDATE_INTERVAL_TICKS) {
-                tickCount = 0;
-                sendStatusUpdates();
-            }
-        }
-    }
-
-    private static void sendStatusUpdates() {
+    public static void sendStatusUpdates() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) {
             for (UUID playerUUID : playerStatusMap.keySet()) {
                 ServerPlayer serverPlayer = server.getPlayerList().getPlayer(playerUUID);
                 if (serverPlayer != null) {
-                    PlayerStatusPacket status = playerStatusMap.get(playerUUID);
+                    String status = playerStatusMap.get(playerUUID);
+                    System.err.println(
+                            "Sending status updates " + serverPlayer.getName().getString() + " " + status);
                     Main.NETWORK_CHANNEL.send(PacketDistributor.PLAYER.with(() -> serverPlayer),
-                            new PlayerStatusPacket(playerUUID, status.mobsMax, status.mobsLives));
+                            new StatusUpdatePacket(playerUUID.toString() + "," + status));
                 }
             }
         }
@@ -63,14 +50,19 @@ public class StatusBarRenderer {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player != null && playerStatusMap.containsKey(player.getUUID()) && !event.isCanceled()) {
-            PlayerStatusPacket status = playerStatusMap.get(player.getUUID());
-            if (status != null && status.mobsLives > 0) {
-                renderStatusBar(event.getGuiGraphics(), status);
+            String status = playerStatusMap.get(player.getUUID());
+            if (status != null) {
+                String[] parts = status.split(",");
+                int mobsMax = Integer.parseInt(parts[0]);
+                int mobsLives = Integer.parseInt(parts[1]);
+                if (mobsLives > 0) {
+                    renderStatusBar(event.getGuiGraphics(), mobsMax, mobsLives);
+                }
             }
         }
     }
 
-    private static void renderStatusBar(GuiGraphics guiGraphics, PlayerStatusPacket status) {
+    private static void renderStatusBar(GuiGraphics guiGraphics, int mobsMax, int mobsLives) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
             return;
@@ -81,12 +73,8 @@ public class StatusBarRenderer {
         int barX = 5;
         int barY = 13;
 
-        // Draw the background bar (white)
         guiGraphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFFFFFFFF);
 
-        // Draw the filled segments (red)
-        int mobsMax = status.mobsMax;
-        int mobsLives = status.mobsLives;
         int fillAmount = barWidth / mobsMax;
 
         for (int i = 0; i < mobsLives; i++) {
@@ -95,7 +83,6 @@ public class StatusBarRenderer {
             guiGraphics.fill(segmentStartX, barY, segmentEndX, barY + barHeight, 0xFFFF0000);
         }
 
-        // Draw the text
         String text = "Wave mobs lives: " + mobsLives + "/" + mobsMax;
         int textX = barX + (barWidth - mc.font.width(text)) / 2;
         int textY = barY - 10;

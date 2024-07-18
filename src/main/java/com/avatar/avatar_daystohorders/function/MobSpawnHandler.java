@@ -71,7 +71,7 @@ public class MobSpawnHandler {
             totalMobs += mobsInfo.getQuantity();
         }
         for (ServerPlayer player : players) {
-            StatusBarRenderer.updatePlayerStatus(player.getUUID(), 0, maxMobs - 1);
+            // StatusBarRenderer.updatePlayerStatus(player.getUUID(), 0, maxMobs - 1);
             String playerName = player.getName().getString();
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
             if (currentWave == null) {
@@ -129,6 +129,7 @@ public class MobSpawnHandler {
         String playerName = player.getName().getString();
         List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
         message(player, currentWave.size() + " mobs");
+        System.out.println("Wave mobs: " + currentWave.size());
         StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
 
         for (int i = 0; i < currentWave.size(); i++) {
