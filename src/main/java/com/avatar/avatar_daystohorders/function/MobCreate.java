@@ -42,7 +42,7 @@ public class MobCreate {
                     double height = mob.getBbHeight();
                     BlockPos blockPos = new BlockPos((int) x, (int) y, (int) z);
                     BlockPos blockPosHeight = new BlockPos((int) x, (int) y + (int) height, (int) z);
-                    BlockPos blockFloor = new BlockPos((int) x, (int) y - 3, (int) z);
+                    BlockPos blockFloor = new BlockPos((int) x, (int) y - 4, (int) z);
                     BlockState blockState = world.getBlockState(blockPos);
                     BlockState blockStateHeight = world.getBlockState(blockPosHeight);
                     BlockState blockFloorState = world.getBlockState(blockFloor);
@@ -54,7 +54,9 @@ public class MobCreate {
                         mob.addTag("avatar_daystohorders_mob");
                         mob.canSprint();
                         mob.setPersistenceRequired();
-                        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
+                        mob.setSwimming(true);
+                        // mob.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 9999, 1));
+                        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999, 4));
                         addItem(mob);
                         world.addFreshEntity(mob);
                         currentWave.add(mob.getUUID());

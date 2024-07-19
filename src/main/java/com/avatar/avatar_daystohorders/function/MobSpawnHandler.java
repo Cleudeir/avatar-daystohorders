@@ -102,7 +102,7 @@ public class MobSpawnHandler {
 
         List<UUID> currentWave = new ArrayList<>();
 
-        int distant = 10 + (int) Math.ceil(Math.random() * 20);
+        int distant = 10 + (int) Math.ceil(Math.random() * 30);
         // distant = 0;
         int index = 6;
 

@@ -30,8 +30,14 @@ public class PortalSpawnHandler {
         return Math.sqrt(2 * height / gravity);
     }
 
-    private static void spawnFallingMagmaBlock(ServerLevel world, BlockPos pos) {
+    private static void spawnFallingMagmaBlock(ServerLevel world, BlockPos portalPos) {
         // Create the BlockState for the falling block (in this case, Magma Block)
+        int height = 30; // Example height in meters
+        int BlockX = portalPos.getX();
+        int BlockY = portalPos.getY() + height;
+        int BlockZ = portalPos.getZ();
+        BlockPos pos = new BlockPos(BlockX, BlockY, BlockZ);
+
         BlockState flameState = Blocks.FIRE.defaultBlockState();
 
         // Create a 4x4x4 grid of falling blocks
@@ -59,7 +65,7 @@ public class PortalSpawnHandler {
     public static void DestroyBlockConstruction(int index, BlockPos portalPos, ServerLevel world) {
         BlockState frameState = Blocks.NETHERRACK.defaultBlockState();
         BlockState airState = Blocks.AIR.defaultBlockState();
-        for (int k = 0; k < index + 1; k++) {
+        for (int k = 0; k < index; k++) {
             int portalY = portalPos.getY() - k;
             for (int i = -index + k; i <= index - k; i++) {
                 int portalX = portalPos.getX() + i;
@@ -105,12 +111,6 @@ public class PortalSpawnHandler {
             }
         }
 
-        int height = 30; // Example height in meters
-        int BlockX = portalPos.getX();
-        int BlockY = portalPos.getY() + height;
-        int BlockZ = portalPos.getZ();
-        BlockPos portalPos2 = new BlockPos(BlockX, BlockY, BlockZ);
-        spawnFallingMagmaBlock(world, portalPos2);
     }
 
     public static void createPortal(ServerLevel world, Player player, int distant, int index) {
@@ -119,11 +119,14 @@ public class PortalSpawnHandler {
         int z = pos.getZ() - distant;
         int y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         BlockPos portalPos = new BlockPos(x, y, z);
-        DestroyBlockConstruction(index, portalPos, world);
-        world.playSound(null, portalPos, SoundEvents.PORTAL_TRAVEL, SoundSource.BLOCKS, 1.0F, 1.0F);
-        BlockState state = Blocks.LIGHT.defaultBlockState();
-        world.setBlock(portalPos, state, 3);
-        world.playSound(null, portalPos, SoundEvents.PORTAL_TRIGGER, SoundSource.BLOCKS, 1.0F, 1.0F);
+        BlockPos portalFloor = new BlockPos(x, y - 1, z);
+        BlockState BlockPortalPos = world.getBlockState(portalFloor);
+        if (BlockPortalPos.getBlock() != Blocks.WATER) {
+            DestroyBlockConstruction(index, portalPos, world);
+            spawnFallingMagmaBlock(world, portalPos);
+            world.playSound(null, portalPos, SoundEvents.PORTAL_TRAVEL, SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+
     }
 
     public static void recreatePortal(ServerLevel world) {
