@@ -3,9 +3,10 @@ package com.avatar.avatar_daystohorders.network;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import com.avatar.avatar_daystohorders.Client.StatusBarRenderer;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import com.avatar.avatar_daystohorders.function.StatusBarRenderer;
 
 public class StatusUpdatePacket {
     private final String statusUpdate;

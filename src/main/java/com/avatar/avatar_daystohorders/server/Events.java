@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 
 import com.avatar.avatar_daystohorders.GlobalConfig;
 import com.avatar.avatar_daystohorders.Main;
+import com.avatar.avatar_daystohorders.Client.StatusBarRenderer;
 import com.avatar.avatar_daystohorders.function.MobSpawnHandler;
 import com.avatar.avatar_daystohorders.function.PortalSpawnHandler;
 
@@ -18,7 +19,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import com.avatar.avatar_daystohorders.function.StatusBarRenderer;
 
 @Mod.EventBusSubscriber(modid = Main.MODID)
 public class Events {
@@ -58,9 +58,10 @@ public class Events {
                     mobSpawnHandler.save();
                     endState = false;
                 }
-                if (checkPeriod(5) && isNight) {
+                if (checkPeriod(1) && isNight) {
                     StatusBarRenderer.sendStatusUpdates();
                 } else if (checkPeriod(60) && !isNight) {
+                    StatusBarRenderer.resetPlayerStatus();
                     StatusBarRenderer.sendStatusUpdates();
                 }
 

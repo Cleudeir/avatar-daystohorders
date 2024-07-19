@@ -8,8 +8,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import org.joml.Random;
+
 import com.avatar.avatar_daystohorders.GlobalConfig;
 import com.avatar.avatar_daystohorders.Main;
+import com.avatar.avatar_daystohorders.Client.StatusBarRenderer;
 import com.avatar.avatar_daystohorders.animation.Animate;
 import com.avatar.avatar_daystohorders.object.MobWaveDescripton;
 import com.avatar.avatar_daystohorders.server.ServerConfig;
@@ -25,6 +28,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Main.MODID)
@@ -34,9 +38,8 @@ public class MobSpawnHandler {
 
     public static void sendTitleMessage(ServerPlayer player, String title, int fadeIn, int stay,
             int fadeOut) {
-        // Send the title
+
         player.connection.send(new ClientboundSetTitleTextPacket(Component.literal(title)));
-        // Set the animation times
         player.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
     }
 
@@ -71,7 +74,6 @@ public class MobSpawnHandler {
             totalMobs += mobsInfo.getQuantity();
         }
         for (ServerPlayer player : players) {
-            // StatusBarRenderer.updatePlayerStatus(player.getUUID(), 0, maxMobs - 1);
             String playerName = player.getName().getString();
             List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
             if (currentWave == null) {
@@ -81,9 +83,8 @@ public class MobSpawnHandler {
                     createWave(player, world, waverNumber, waverNumberListMobs, totalMobs, maxMobs);
                 } else {
                     currentWaveMobsPerPlayer.put(playerName, currentWave);
-                    StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
+                    StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs);
                 }
-
                 sound(player, world, "bell_resonate");
             } else if (currentWave.isEmpty()) {
                 createWave(player, world, waverNumber, waverNumberListMobs, totalMobs, maxMobs);
@@ -101,24 +102,37 @@ public class MobSpawnHandler {
 
         List<UUID> currentWave = new ArrayList<>();
 
-        int distant = 10 + world.random.nextInt(10);
+        int distant = 10 + world.random.nextInt(30);
+        distant = 0;
         int index = 6;
 
         sound(player, world, "bell_resonate");
         PortalSpawnHandler.recreatePortal(world);
-        PortalSpawnHandler.createPortal(world, player, distant, index);
 
-        for (MobWaveDescripton mobsInfo : waverNumberListMobs) {
-            int quantityWeight = (int) Math.floor(maxMobs * mobsInfo.getQuantity() / totalMobs);
+        for (int i = 0; i < waverNumberListMobs.size(); i++) {
+            MobWaveDescripton mobsInfo = waverNumberListMobs.get(i);
+            int quantityWeight = (int) Math.ceil(maxMobs * mobsInfo.getQuantity() / totalMobs);
             if (quantityWeight == 0) {
                 quantityWeight = 1;
             }
+            if (currentWave.size() + quantityWeight > maxMobs) {
+                quantityWeight = maxMobs - currentWave.size() + 1;
+            }
+            if (i == waverNumberListMobs.size() - 1) {
+                quantityWeight = maxMobs - currentWave.size();
+            }
+            if (quantityWeight > 0) {
+                List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
+                        quantityWeight, distant, index);
+                currentWave.addAll(create);
+            }
+            if (i == waverNumberListMobs.size() - 1 && currentWave.size() > 0) {
+                PortalSpawnHandler.createPortal(world, player, distant, index);
+            }
 
-            List<UUID> create = MobCreate.spawnMobs(world, player, mobsInfo.getMobName(),
-                    quantityWeight, distant, index);
-            currentWave.addAll(create);
         }
-        StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
+
+        StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs);
 
         String playerName = player.getName().getString();
         currentWaveMobsPerPlayer.put(playerName, currentWave);
@@ -128,9 +142,7 @@ public class MobSpawnHandler {
     public void waveMobCheck(ServerPlayer player, ServerLevel world, Integer waverNumber, int maxMobs) {
         String playerName = player.getName().getString();
         List<UUID> currentWave = currentWaveMobsPerPlayer.get(playerName);
-        message(player, currentWave.size() + " mobs");
-        System.out.println("Wave mobs: " + currentWave.size());
-        StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs - 1);
+        StatusBarRenderer.updatePlayerStatus(player.getUUID(), currentWave.size(), maxMobs);
 
         for (int i = 0; i < currentWave.size(); i++) {
             UUID mobId = currentWave.get(i);
@@ -160,9 +172,17 @@ public class MobSpawnHandler {
                     StatusBarRenderer.updatePlayerStatus(player.getUUID(), 0, 0);
                     sendTitleMessage(player, "The night ends", 5, 40, 10);
                     sound(player, world, "entity_creeper_hurt");
+                    giveRandomItem(player);
                 }
             }
         }
+    }
+
+    private void giveRandomItem(ServerPlayer player) {
+        List<ItemStack> rareItems = GlobalConfig.getRareItems();
+        Random random = new Random();
+        ItemStack randomItem = rareItems.get(random.nextInt(rareItems.size()));
+        player.addItem(randomItem);
     }
 
     public static void removeMob(UUID mobId, ServerLevel world) {
@@ -180,7 +200,6 @@ public class MobSpawnHandler {
 
     public void save() {
         ServerConfig.saveCurrentWaveMobsPerPlayer(currentWaveMobsPerPlayer);
-        System.out.println(" Data saved " + currentWaveMobsPerPlayer);
     }
 
 }

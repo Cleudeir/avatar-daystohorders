@@ -23,7 +23,7 @@ public class PortalSpawnHandler {
         portal = ServerConfig.loadPortalBlocks();
     }
 
-    private static final int GRID_SIZE = 3;
+    private static final int GRID_SIZE = 4;
 
     public static double calculateFallTime(double height) {
         final double gravity = 32;
@@ -57,27 +57,54 @@ public class PortalSpawnHandler {
     }
 
     public static void DestroyBlockConstruction(int index, BlockPos portalPos, ServerLevel world) {
-        BlockState frameState = Blocks.AIR.defaultBlockState();
-        for (int k = 0; k <= index; k++) {
+        BlockState frameState = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState airState = Blocks.AIR.defaultBlockState();
+        for (int k = 0; k < index; k++) {
+            int portalY = portalPos.getY() - k;
             for (int i = -index + k; i <= index - k; i++) {
+                int portalX = portalPos.getX() + i;
                 for (int j = -index + k; j <= index - k; j++) {
-                    int portalX = portalPos.getX() + i;
-                    int portalY = portalPos.getY() - k;
                     int portalZ = portalPos.getZ() + j;
-
                     BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
                     BlockState blockState = world.getBlockState(newPos);
-
                     if (blockState.getBlock() == Blocks.BEDROCK) {
                         break;
                     }
-
                     portal.put(newPos, blockState);
-
-                    world.setBlock(newPos, frameState, 3);
+                    world.setBlock(newPos, airState, 3);
                 }
             }
         }
+
+        for (int k = 0; k < index + 3; k++) {
+            int portalY = portalPos.getY() - k - 1;
+            for (int i = -index + k; i <= index - k; i++) {
+                int portalX = portalPos.getX() + i;
+                for (int j = -index + k; j <= index - k; j++) {
+                    if (i == -index + k || i == index - k) {
+                        int portalZ = portalPos.getZ() + j;
+                        BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
+                        BlockState blockState = world.getBlockState(newPos);
+                        if (blockState.getBlock() == Blocks.BEDROCK) {
+                            break;
+                        }
+                        portal.put(newPos, blockState);
+                        world.setBlock(newPos, frameState, 3);
+                    }
+                    if (j == -index + k || j == index - k) {
+                        int portalZ = portalPos.getZ() + j;
+                        BlockPos newPos = new BlockPos(portalX, portalY, portalZ);
+                        BlockState blockState = world.getBlockState(newPos);
+                        if (blockState.getBlock() == Blocks.BEDROCK) {
+                            break;
+                        }
+                        portal.put(newPos, blockState);
+                        world.setBlock(newPos, frameState, 3);
+                    }
+                }
+            }
+        }
+
         int height = 30; // Example height in meters
         int BlockX = portalPos.getX();
         int BlockY = portalPos.getY() + height;

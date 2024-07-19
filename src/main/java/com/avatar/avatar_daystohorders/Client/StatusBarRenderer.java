@@ -1,4 +1,4 @@
-package com.avatar.avatar_daystohorders.function;
+package com.avatar.avatar_daystohorders.Client;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +29,10 @@ public class StatusBarRenderer {
         playerStatusMap.put(playerUUID, status);
     }
 
+    public static void resetPlayerStatus() {
+        playerStatusMap.clear();
+    }
+
     public static void sendStatusUpdates() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) {
@@ -36,6 +40,8 @@ public class StatusBarRenderer {
                 ServerPlayer serverPlayer = server.getPlayerList().getPlayer(playerUUID);
                 if (serverPlayer != null) {
                     String status = playerStatusMap.get(playerUUID);
+                    if (status == null)
+                        continue;
                     System.err.println(
                             "Sending status updates " + serverPlayer.getName().getString() + " " + status);
                     Main.NETWORK_CHANNEL.send(PacketDistributor.PLAYER.with(() -> serverPlayer),

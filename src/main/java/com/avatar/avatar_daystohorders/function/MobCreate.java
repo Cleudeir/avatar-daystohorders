@@ -33,18 +33,22 @@ public class MobCreate {
         if (entityType != null) {
             for (int i = 0; i < quantity; i++) {
                 Entity entity = entityType.create(world);
+
                 if (entity instanceof Mob) {
                     Mob mob = (Mob) entity;
                     double x = player.getX() - distant - (int) (index / 2);
                     double z = player.getZ() - distant;
-                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z) + 1;
+                    double y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z) + 3;
                     double height = mob.getBbHeight();
                     BlockPos blockPos = new BlockPos((int) x, (int) y, (int) z);
                     BlockPos blockPosHeight = new BlockPos((int) x, (int) y + (int) height, (int) z);
+                    BlockPos blockFloor = new BlockPos((int) x, (int) y - 3, (int) z);
                     BlockState blockState = world.getBlockState(blockPos);
                     BlockState blockStateHeight = world.getBlockState(blockPosHeight);
+                    BlockState blockFloorState = world.getBlockState(blockFloor);
                     System.out.println(blockState + " " + blockStateHeight);
-                    if (blockState.isAir() && blockStateHeight.isAir() && blockState.getBlock() != Blocks.WATER) {
+                    if (blockState.isAir() && blockStateHeight.isAir() && blockState.getBlock() != Blocks.WATER
+                            && blockFloorState.getBlock() != Blocks.WATER) {
                         mob.setPos(x, y, z);
                         mob.setTarget(player);
                         mob.addTag("avatar_daystohorders_mob");
@@ -53,7 +57,6 @@ public class MobCreate {
                         mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
                         addItem(mob);
                         world.addFreshEntity(mob);
-
                         currentWave.add(mob.getUUID());
                     }
                 }
