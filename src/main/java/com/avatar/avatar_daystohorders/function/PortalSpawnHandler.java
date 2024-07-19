@@ -57,9 +57,9 @@ public class PortalSpawnHandler {
     }
 
     public static void DestroyBlockConstruction(int index, BlockPos portalPos, ServerLevel world) {
-        BlockState frameState = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState frameState = Blocks.NETHERRACK.defaultBlockState();
         BlockState airState = Blocks.AIR.defaultBlockState();
-        for (int k = 0; k < index; k++) {
+        for (int k = 0; k < index + 1; k++) {
             int portalY = portalPos.getY() - k;
             for (int i = -index + k; i <= index - k; i++) {
                 int portalX = portalPos.getX() + i;

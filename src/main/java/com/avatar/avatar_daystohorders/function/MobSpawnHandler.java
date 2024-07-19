@@ -103,7 +103,7 @@ public class MobSpawnHandler {
         List<UUID> currentWave = new ArrayList<>();
 
         int distant = 10 + world.random.nextInt(30);
-        distant = 0;
+        // distant = 0;
         int index = 6;
 
         sound(player, world, "bell_resonate");
