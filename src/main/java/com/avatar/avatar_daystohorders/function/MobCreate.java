@@ -56,7 +56,7 @@ public class MobCreate {
                         mob.setPersistenceRequired();
                         mob.setSwimming(true);
                         // mob.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 9999, 1));
-                        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999, 4));
+                        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 20 * 15, 4));
                         addItem(mob);
                         world.addFreshEntity(mob);
                         currentWave.add(mob.getUUID());

@@ -43,7 +43,7 @@ public class MobSpawnHandler {
         player.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
     }
 
-    public void message(ServerPlayer player, String message) {
+    public static void message(ServerPlayer player, String message) {
         player.sendSystemMessage(
                 Component.translatable(message));
     }
@@ -104,7 +104,7 @@ public class MobSpawnHandler {
 
         int distant = 10 + (int) Math.ceil(Math.random() * 30);
         // distant = 0;
-        int index = 6;
+        int index = 4;
 
         sound(player, world, "bell_resonate");
         PortalSpawnHandler.recreatePortal(world);

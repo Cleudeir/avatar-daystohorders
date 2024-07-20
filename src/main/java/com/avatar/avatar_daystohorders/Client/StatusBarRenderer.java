@@ -30,7 +30,10 @@ public class StatusBarRenderer {
     }
 
     public static void resetPlayerStatus() {
-        playerStatusMap.clear();
+        for (UUID playerUUID : playerStatusMap.keySet()) {
+            playerStatusMap.put(playerUUID, 0 + "," + 0);
+        }
+        sendStatusUpdates();
     }
 
     public static void sendStatusUpdates() {

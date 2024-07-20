@@ -2,6 +2,7 @@ package com.avatar.avatar_daystohorders.server;
 
 import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import com.avatar.avatar_daystohorders.GlobalConfig;
@@ -9,11 +10,20 @@ import com.avatar.avatar_daystohorders.Main;
 import com.avatar.avatar_daystohorders.Client.StatusBarRenderer;
 import com.avatar.avatar_daystohorders.function.MobSpawnHandler;
 import com.avatar.avatar_daystohorders.function.PortalSpawnHandler;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ambient.AmbientCreature;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -58,14 +68,49 @@ public class Events {
                     mobSpawnHandler.save();
                     endState = false;
                 }
+                List<ServerPlayer> players = event.getServer().getPlayerList().getPlayers();
+                if (checkPeriod(30)) {
+                    if (players == null)
+                        return;
+                    Iterable<Entity> allUnits = world.getAllEntities();
+                    AtomicInteger count = new AtomicInteger(0);
+                    allUnits.forEach(entity -> {
+                        count.incrementAndGet();
+                    });
+                    int totalCount = count.get();
+                    for (ServerPlayer player : players) {
+                        MobSpawnHandler.message(player, "Total mobs: " + totalCount);
+                        /*
+                         * double px = player.getX();
+                         * double py = player.getY();
+                         * double pz = player.getZ();
+                         * 
+                         * int distant = 999999;
+                         * 
+                         * AABB boundingBox = new AABB(
+                         * px - distant, py - distant, pz - distant,
+                         * px + distant, py + distant, pz + distant);
+                         * List<Mob> mobs = world.getEntitiesOfClass(Mob.class, boundingBox);
+                         * 
+                         * List<Monster> monsters = world.getEntitiesOfClass(Monster.class,
+                         * boundingBox);
+                         * List<Animal> animals = world.getEntitiesOfClass(Animal.class, boundingBox);
+                         * List<AmbientCreature> ambientCreatures =
+                         * world.getEntitiesOfClass(AmbientCreature.class,
+                         * boundingBox);
+                         * MobSpawnHandler.message(player, "Total monsters: " + monsters.size());
+                         * MobSpawnHandler.message(player, "Total animals: " + animals.size());
+                         * MobSpawnHandler.message(player, "Total ambient creatures: " +
+                         * ambientCreatures.size());
+                         */
+                    }
+                }
                 if (checkPeriod(1) && isNight) {
                     StatusBarRenderer.sendStatusUpdates();
-                } else if (checkPeriod(60) && !isNight) {
+                } else if (checkPeriod(30) && !isNight) {
                     StatusBarRenderer.resetPlayerStatus();
-                    StatusBarRenderer.sendStatusUpdates();
                 }
                 if (timeDay == 12500) {
-                    Collection<ServerPlayer> players = world.getPlayers((Predicate<? super ServerPlayer>) p -> true);
                     for (ServerPlayer player : players) {
                         int timeToWave = periodWave - (day % periodWave);
                         String text = "";

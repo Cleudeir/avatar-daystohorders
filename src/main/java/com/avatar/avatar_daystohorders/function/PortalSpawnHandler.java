@@ -23,7 +23,7 @@ public class PortalSpawnHandler {
         portal = ServerConfig.loadPortalBlocks();
     }
 
-    private static final int GRID_SIZE = 4;
+    private static final int GRID_SIZE = 3;
 
     public static double calculateFallTime(double height) {
         final double gravity = 32;
@@ -32,7 +32,7 @@ public class PortalSpawnHandler {
 
     private static void spawnFallingMagmaBlock(ServerLevel world, BlockPos portalPos) {
         // Create the BlockState for the falling block (in this case, Magma Block)
-        int height = 30; // Example height in meters
+        int height = 80; // Example height in meters
         int BlockX = portalPos.getX();
         int BlockY = portalPos.getY() + height;
         int BlockZ = portalPos.getZ();
