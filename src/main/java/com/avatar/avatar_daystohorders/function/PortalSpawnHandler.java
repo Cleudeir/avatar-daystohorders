@@ -93,6 +93,8 @@ public class PortalSpawnHandler {
                         BlockState blockState = world.getBlockState(newPos);
                         if (blockState.getBlock() == Blocks.BEDROCK) {
                             break;
+                        } else if (blockState.getBlock() == frameState.getBlock()) {
+                            continue;
                         }
                         portal.put(newPos, blockState);
                         world.setBlock(newPos, frameState, 3);
@@ -103,6 +105,8 @@ public class PortalSpawnHandler {
                         BlockState blockState = world.getBlockState(newPos);
                         if (blockState.getBlock() == Blocks.BEDROCK) {
                             break;
+                        } else if (blockState.getBlock() == frameState.getBlock()) {
+                            continue;
                         }
                         portal.put(newPos, blockState);
                         world.setBlock(newPos, frameState, 3);

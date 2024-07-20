@@ -149,7 +149,7 @@ public class MobSpawnHandler {
             Mob mob = (Mob) world.getEntity(mobId);
             if (mob != null) {
                 Boolean mobIsAlive = mob.isAlive();
-                if (mobIsAlive && mob.getTarget() == null) {
+                if (mobIsAlive) {
                     mob.setTarget(player);
                     mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
                 }

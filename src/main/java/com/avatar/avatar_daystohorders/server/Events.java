@@ -64,7 +64,6 @@ public class Events {
                     StatusBarRenderer.resetPlayerStatus();
                     StatusBarRenderer.sendStatusUpdates();
                 }
-
                 if (timeDay == 12500) {
                     Collection<ServerPlayer> players = world.getPlayers((Predicate<? super ServerPlayer>) p -> true);
                     for (ServerPlayer player : players) {

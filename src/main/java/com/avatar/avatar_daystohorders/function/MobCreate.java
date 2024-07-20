@@ -51,7 +51,7 @@ public class MobCreate {
                             && blockFloorState.getBlock() != Blocks.WATER) {
                         mob.setPos(x, y, z);
                         mob.setTarget(player);
-                        mob.addTag("avatar_daystohorders_mob");
+                        mob.addTag("avatar_mobs");
                         mob.canSprint();
                         mob.setPersistenceRequired();
                         mob.setSwimming(true);
