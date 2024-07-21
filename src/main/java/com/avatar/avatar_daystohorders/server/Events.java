@@ -1,19 +1,14 @@
 package com.avatar.avatar_daystohorders.server;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 
 import com.avatar.avatar_daystohorders.GlobalConfig;
 import com.avatar.avatar_daystohorders.Main;
 import com.avatar.avatar_daystohorders.Client.StatusBarRenderer;
 import com.avatar.avatar_daystohorders.function.MobSpawnHandler;
 import com.avatar.avatar_daystohorders.function.PortalSpawnHandler;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,11 +16,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ambient.AmbientCreature;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -73,43 +70,59 @@ public class Events {
                     endState = true;
                 }
                 List<ServerPlayer> players = event.getServer().getPlayerList().getPlayers();
-                if (checkPeriod(30)) {
+                if (checkPeriod(5)) {
                     if (players == null)
                         return;
                     Iterable<Entity> allUnits = world.getAllEntities();
-                    AtomicInteger count = new AtomicInteger(0);
+                    AtomicInteger total = new AtomicInteger(0);
+                    AtomicInteger monster = new AtomicInteger(0);
+                    AtomicInteger ambientCreature = new AtomicInteger(0);
+                    AtomicInteger animal = new AtomicInteger(0);
+                    AtomicInteger item = new AtomicInteger(0);
+                    AtomicInteger npcCount = new AtomicInteger(0);
+                    AtomicInteger playerCount = new AtomicInteger(0);
+
                     allUnits.forEach(entity -> {
-                        count.incrementAndGet();
+                        if (entity instanceof ItemEntity) {
+                            item.incrementAndGet();
+                            total.incrementAndGet();
+                        } else if (entity instanceof AmbientCreature) {
+                            ambientCreature.incrementAndGet();
+                            total.incrementAndGet();
+                        } else if (entity instanceof Animal) {
+                            animal.incrementAndGet();
+                            total.incrementAndGet();
+                        } else if (entity instanceof Npc) {
+                            npcCount.incrementAndGet();
+                            total.incrementAndGet();
+                        } else if (entity instanceof ServerPlayer) {
+                            playerCount.incrementAndGet();
+                            total.incrementAndGet();
+                        } else if (entity instanceof Mob) {
+                            monster.incrementAndGet();
+                            total.incrementAndGet();
+                        } else {
+                            System.out.println("Entity type: " + entity.getClass().getName().toString());
+                        }
+
                     });
-                    int totalCount = count.get();
+                    int totalCount = total.get();
+                    int totalMonsters = monster.get();
+                    int totalAmbientCreatures = ambientCreature.get();
+                    int totalAnimals = animal.get();
+                    int totalItems = item.get();
+                    int totalNpcs = npcCount.get();
+                    int totalPlayers = playerCount.get();
 
                     for (ServerPlayer player : players) {
                         MobSpawnHandler.message(player, "Total mobs: " + totalCount);
+                        MobSpawnHandler.message(player, "Monsters: " + totalMonsters);
+                        MobSpawnHandler.message(player, "Ambient Creatures: " + totalAmbientCreatures);
+                        MobSpawnHandler.message(player, "Animals: " + totalAnimals);
+                        MobSpawnHandler.message(player, "Items: " + totalItems);
+                        MobSpawnHandler.message(player, "Npcs: " + totalNpcs);
+                        MobSpawnHandler.message(player, "Players: " + totalPlayers);
                         break;
-
-                        /*
-                         * double px = player.getX();
-                         * double py = player.getY();
-                         * double pz = player.getZ();
-                         * 
-                         * int distant = 999999;
-                         * 
-                         * AABB boundingBox = new AABB(
-                         * px - distant, py - distant, pz - distant,
-                         * px + distant, py + distant, pz + distant);
-                         * List<Mob> mobs = world.getEntitiesOfClass(Mob.class, boundingBox);
-                         * 
-                         * List<Monster> monsters = world.getEntitiesOfClass(Monster.class,
-                         * boundingBox);
-                         * List<Animal> animals = world.getEntitiesOfClass(Animal.class, boundingBox);
-                         * List<AmbientCreature> ambientCreatures =
-                         * world.getEntitiesOfClass(AmbientCreature.class,
-                         * boundingBox);
-                         * MobSpawnHandler.message(player, "Total monsters: " + monsters.size());
-                         * MobSpawnHandler.message(player, "Total animals: " + animals.size());
-                         * MobSpawnHandler.message(player, "Total ambient creatures: " +
-                         * ambientCreatures.size());
-                         */
                     }
                 }
                 if (checkPeriod(1) && isNight) {
@@ -142,6 +155,58 @@ public class Events {
     }
 
     @SubscribeEvent
+    public static void onLivingCheckSpawn(MobSpawnEvent event) {
+        Entity entity = event.getEntity();
+        ServerLevel world = (ServerLevel) entity.level();
+        int distant = 30;
+
+        // Check if the mob has a custom tag indicating it was already spawned
+        List<ServerPlayer> players = world.players();
+        if (entity.getPersistentData().getBoolean("wasRespawned")) {
+            // Check if the mob is out of range and despawn it if necessary
+
+            boolean playerNearby = false;
+            for (ServerPlayer player : players) {
+                if (player.distanceToSqr(entity.getX(), entity.getY(), entity.getZ()) <= distant * distant &&
+                        Math.abs(player.getY() - entity.getY()) <= distant / 2) {
+                    playerNearby = true;
+                }
+            }
+
+            if (!playerNearby && checkPeriod(120)) {
+                entity.discard(); // Despawn the entity if no players are nearby
+            }
+
+            return; // Exit the method if the mob was already respawned
+        }
+
+        boolean playerNearby = false;
+        for (ServerPlayer player : players) {
+            if (player.distanceToSqr(entity.getX(), entity.getY(), entity.getZ()) <= distant * distant &&
+                    Math.abs(player.getY() - entity.getY()) <= distant / 2) {
+                playerNearby = true;
+            }
+        }
+
+        // If no player is nearby, deny the spawn
+        if (!playerNearby) {
+            event.setResult(MobSpawnEvent.Result.DENY);
+        } else {
+            // If a player is nearby, teleport the entity and mark it as respawned
+            for (ServerPlayer player : players) {
+                double x = player.getX() + 5;
+                double y = player.getY() + 3;
+                double z = player.getZ() + 5;
+
+                // entity.teleportTo(x, y, z);
+                // entity.discard(); // Despawn the entity
+                entity.getPersistentData().putBoolean("wasRespawned", true);
+            }
+        }
+
+    }
+
+    @SubscribeEvent
     public static void OnLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof Mob) {
             UUID mobId = event.getEntity().getUUID();
@@ -150,5 +215,4 @@ public class Events {
             }
         }
     }
-
 }
