@@ -102,7 +102,7 @@ public class MobSpawnHandler {
 
         List<UUID> currentWave = new ArrayList<>();
 
-        int distant = 10 + (int) Math.ceil(Math.random() * 30);
+        int distant = 10 + (int) Math.ceil(Math.random() * 10);
         // distant = 0;
         int index = 4;
 
@@ -151,7 +151,9 @@ public class MobSpawnHandler {
                 Boolean mobIsAlive = mob.isAlive();
                 if (mobIsAlive) {
                     mob.setTarget(player);
-                    mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 9999));
+
+                    // MobBlockPlaceHandler.onMobUpdate(world, player, mob);
+
                 }
                 Animate.portal(world, mob.getX(), mob.getY(), mob.getZ());
                 MobTeleport.mobTeleport(mob, world, player);

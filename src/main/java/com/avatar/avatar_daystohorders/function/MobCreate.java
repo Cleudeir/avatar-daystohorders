@@ -55,7 +55,7 @@ public class MobCreate {
                         mob.canSprint();
                         mob.setPersistenceRequired();
                         mob.setSwimming(true);
-                        // mob.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 9999, 1));
+                        mob.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 20 * 5, 1));
                         mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 20 * 15, 4));
                         addItem(mob);
                         world.addFreshEntity(mob);

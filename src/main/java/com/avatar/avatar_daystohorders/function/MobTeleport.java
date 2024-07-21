@@ -7,14 +7,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 public class MobTeleport {
     public static void mobTeleport(Mob mob, ServerLevel world, Player player) {
-        int distant = 20;
+        int distant = 10 + (int) Math.ceil(Math.random() * 10);
         double playerPosX = player.getX();
         double playerPosY = player.getY();
         double firstMobPosX = mob.getX();
         double firstMobPosY = mob.getY();
         double distance = Math
                 .sqrt(Math.pow(playerPosX - firstMobPosX, 2) + Math.pow(playerPosY - firstMobPosY, 2));
-        if (distance > 60) {
+        if (distance > 40) {
             System.out.println("Distance: " + distance + ' ' + mob.getName().getString());
             double x = playerPosX - distant;
             double z = playerPosY - distant;

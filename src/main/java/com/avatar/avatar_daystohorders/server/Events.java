@@ -60,13 +60,17 @@ public class Events {
                 currentTime = time;
                 int day = (int) (time / 24000) + 1;
                 int waveNumber = periodWave == 0 ? 0 : (int) day / periodWave;
-                if (checkPeriod(10) && day > 0 && day % periodWave == 0 && isNight) {
+                if (checkPeriod(1) && day > 0 && day % periodWave == 0 && isNight) {
                     mobSpawnHandler.startWave(world, waveNumber);
                     endState = true;
                 } else if (checkPeriod(15) && endState && !isNight) {
                     mobSpawnHandler.end(world);
                     mobSpawnHandler.save();
                     endState = false;
+                }
+                if (checkPeriod(10) && day > 0 && day % periodWave == 0 && isNight) {
+                    mobSpawnHandler.startWave(world, waveNumber);
+                    endState = true;
                 }
                 List<ServerPlayer> players = event.getServer().getPlayerList().getPlayers();
                 if (checkPeriod(30)) {
@@ -78,8 +82,11 @@ public class Events {
                         count.incrementAndGet();
                     });
                     int totalCount = count.get();
+
                     for (ServerPlayer player : players) {
                         MobSpawnHandler.message(player, "Total mobs: " + totalCount);
+                        break;
+
                         /*
                          * double px = player.getX();
                          * double py = player.getY();
