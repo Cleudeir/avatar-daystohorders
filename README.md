@@ -1,8 +1,7 @@
-
-                # StatusUpdatePacket.java                
-                ## project structure
-                ```                    
-                avatar-daystohorders/
+# Avatar-daystohorders             
+## project structure
+```                    
+avatar-daystohorders/
     README.md
     mine.xlsx
     build.gradle
@@ -46,10 +45,11 @@
         wrapper/
             gradle-wrapper.jar
             gradle-wrapper.properties                
-                ```
-                ## Resumo do Projeto Minecraft Forge
+```
+## Resumo do Projeto Minecraft Forge
 
 Este projeto abrange diversos componentes de um mod para Minecraft utilizando a API Minecraft Forge.  Os componentes incluem:  um sistema de ondas de monstros com configuração persistente, um gerenciador de portal com efeitos visuais, um sistema de atualização de status do jogador via rede,  e mecanismos para teletransporte de monstros e colocação automática de blocos. O código utiliza Forge Config Spec para gerenciamento de configurações, `FriendlyByteBuf` para comunicação em rede e diversas classes para lidar com eventos de jogo e manipulação de entidades.  O projeto enfatiza a persistência de dados entre sessões de jogo e a comunicação eficiente entre o cliente e o servidor.
+
 ## Propósito e Descrição do Projeto
 
 Este projeto é um mod para Minecraft que adiciona diversas funcionalidades, incluindo um sistema de ondas de monstros, um portal personalizado com efeitos visuais, um sistema de atualização de status para o jogador, e mecanismos de teletransporte de monstros e colocação automática de blocos.  O mod utiliza a API Minecraft Forge e é focado em fornecer uma experiência de jogo dinâmica e envolvente.
